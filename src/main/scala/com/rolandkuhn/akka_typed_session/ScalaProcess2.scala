@@ -10,6 +10,7 @@ import scala.util.control.NoStackTrace
 import scala.annotation.implicitNotFound
 import shapeless._
 import shapeless.ops._
+import shapeless.test.illTyped
 
 /**
  * A DSL for writing reusable behavior pieces that are executed concurrently
@@ -309,8 +310,8 @@ object ScalaProcess2 {
     type C = E.Fork[_0]
     type D = E.Spawn[_0]
 
-    //implicitly[Effects.NoSub[String, Any]]
-    //implicitly[Effects.NoSub[String, String]]
+    illTyped("implicitly[ops.NoSub[String, Any]]")
+    illTyped("implicitly[ops.NoSub[String, String]]")
     implicitly[ops.NoSub[String, Int]]
     implicitly[ops.NoSub[Any, String]]
 
@@ -346,7 +347,7 @@ object ScalaProcess2 {
       type Session = //
       Send[AuthRequest] :: // first ask for authentication
       Read[AuthResult] :: // then read the response
-      E.Choice[(Halt :: _0) :+: _0 :+: CNil] :: // then possibly terminate if rejected
+      Choice[(Halt :: _0) :+: _0 :+: CNil] :: // then possibly terminate if rejected
       Send[Command] :: _0 // then send a command
     }
 
@@ -516,7 +517,19 @@ object ScalaProcess2 {
   def opUnit[U](value: U)(implicit opDSL: OpDSL): Operation[opDSL.Self, U, _0] = Impl.Return(value)
 
   /**
-   * Start a list of choices.
+   * Start a list of choices. The effects of the choices are accumulated in
+   * reverse order in the Coproduct within the Choice effect.
+   *
+   * {{{
+   * opChoice(x > 5, opRead)
+   *   .elseIf(x > 0, opUnit(42))
+   *   .orElse(opAsk(someActor, GetNumber))
+   * : Operation[Int, Int, Choice[
+   *     (Send[GetNumber] :: Read[Int] :: _0) :+:
+   *     _0 :+:
+   *     (Read[Int] :: _0) :+:
+   *     CNil] :: _0]
+   * }}}
    */
   def opChoice[S, O, E <: Effects](p: Boolean, op: ⇒ Operation[S, O, E]): OpChoice[Operation[S, O, E], CNil, E :+: CNil, Any] =
     if (p) new OpChoice(Some(Coproduct(op))) else new OpChoice(None)
@@ -524,10 +537,10 @@ object ScalaProcess2 {
   class OpChoice[H, T <: Coproduct, E0 <: Coproduct, +O](ops: Option[H :+: T])(implicit u: coproduct.Unifier.Aux[H :+: T, O]) {
     def elseIf[S, O, E <: Effects](p: Boolean, op: => Operation[S, O, E]): OpChoice[Operation[S, O, E], H :+: T, E :+: E0, Any] = {
       val ret = ops match {
-        case Some(c) => c.extendLeft[Operation[S, O, E]]
-        case None    => Coproduct[Operation[S, O, E] :+: H :+: T](op)
+        case Some(c) => Some(c.extendLeft[Operation[S, O, E]])
+        case None    => if (p) Some(Coproduct[Operation[S, O, E] :+: H :+: T](op)) else None
       }
-      new OpChoice(Some(ret))
+      new OpChoice(ret)
     }
     def orElse[S, O, E <: Effects](op: => Operation[S, O, E]): Operation[S, O, E.Choice[E :+: E0] :: _0] = {
       val ret = ops match {
