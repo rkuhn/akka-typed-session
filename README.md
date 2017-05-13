@@ -91,3 +91,9 @@ to the `Session` type member of the given protocol to see whether it is a subtyp
 
 The result is that the whole program only compiles if the process performs all the required externally visible effects in
 the right order. If a step is forgotten or duplicated then the `vetProtocol` invocation will raise a type error.
+
+## Legal
+
+See the LICENSE file for details on licensing and CONTRIBUTING for the contributor’s guide.
+
+Copyright 2017 Roland Kuhn
