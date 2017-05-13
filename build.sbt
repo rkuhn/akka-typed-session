@@ -7,6 +7,7 @@ scalacOptions += "-deprecation"
 logBuffered in Test := false
 
 val akkaVersion = "2.5.99-TYPED-M1"
+
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
 libraryDependencies ++= Seq(
