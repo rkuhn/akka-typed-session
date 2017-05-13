@@ -106,10 +106,8 @@ class ProcessSpec extends TypedSpec {
           for {
             _ ← opSpawn(backend.named("backend"))
             self ← opProcessSelf
-            //            _ ← retry(1.second, 3, register(self, RequestService).named("register"))
-            //            backend ← retry(1.second, 3, getBackend.named("getBackend"))
-            _ <- opCall(register(self, RequestService).named("register"))
-            backend <- opCall(getBackend.named("getBackend"))
+            _ ← retry(1.second, 3, register(self, RequestService).named("register"))
+            backend ← retry(1.second, 3, getBackend.named("getBackend"))
           } yield OpDSL.loopInf { _ ⇒
             for (req ← opRead) yield forkAndCancel(5.seconds, talkWithBackend(backend.addresses.head, req).named("worker"))
           }

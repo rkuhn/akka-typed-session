@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 import akka.{ actor ⇒ a }
 import scala.util.control.NoStackTrace
 import scala.annotation.implicitNotFound
-import shapeless._
+import shapeless.{ Coproduct, :+:, CNil }
 import shapeless.ops._
 import shapeless.test.illTyped
 import akka.typed.scaladsl.Actor
@@ -840,19 +840,49 @@ object ScalaDSL {
   }
 
   /**
+   * Fork the given processes the return the first value emitted by any one of
+   * them. As soon as one process has yielded its value all others are canceled.
+   *
+   * TODO figure out effects
+   */
+  def firstOf[T](processes: Process[_, T, _ <: Effects]*): Operation[T, T, _0] = {
+    def forkAll(self: ActorRef[T], index: Int = 0,
+                p: List[Process[_, T, _ <: Effects]] = processes.toList,
+                acc: List[SubActor[Nothing]] = Nil)(implicit opDSL: OpDSL { type Self = T }): Operation[T, List[SubActor[Nothing]], _0] =
+      p match {
+        case Nil ⇒ opUnit(acc)
+        case x :: xs ⇒
+          opFork(x.copy(name = s"$index-${x.name}").map(self ! _))
+            .map(sub ⇒ forkAll(self, index + 1, xs, sub :: acc))
+            .ignoreEffects
+      }
+    OpDSL[T] { implicit opDSL ⇒
+      for {
+        self ← opProcessSelf
+        subs ← forkAll(self)
+        value ← opRead
+      } yield {
+        subs.foreach(_.cancel())
+        value
+      }
+    }.ignoreEffects
+  }
+
+  /**
    * Retry the given process the specified number of times, always bounding
    * the wait time by the given timeout and canceling the fruitless process.
    * If the number of retries is exhausted, the entire Actor will be failed.
+   * 
+   * FIXME effects need more thought
    */
-  // FIXME figure out effects
-  //  def retry[S, T](timeout: FiniteDuration, retries: Int, ops: Process[S, T])(implicit opDSL: OpDSL): Operation[opDSL.Self, T] = {
-  //    opCall(firstOf(ops.map(Some(_)), delay(timeout, None).named("retryTimeout")).named("firstOf"))
-  //      .map {
-  //        case Some(res)           ⇒ opUnit(res)
-  //        case None if retries > 0 ⇒ retry(timeout, retries - 1, ops)
-  //        case None                ⇒ throw new RetriesExceeded(s"process ${ops.name} has been retried $retries times with timeout $timeout")
-  //      }
-  //  }
+  def retry[S, T, E <: Effects](timeout: FiniteDuration, retries: Int, ops: Process[S, T, E])(implicit opDSL: OpDSL): Operation[opDSL.Self, T, E] = {
+    opCall(firstOf(ops.map(Some(_)), delay(timeout, None).named("retryTimeout")).named("firstOf"))
+      .flatMap {
+        case Some(res)           ⇒ opUnit(res).withEffects[E]
+        case None if retries > 0 ⇒ retry(timeout, retries - 1, ops)
+        case None                ⇒ throw new RetriesExceeded(s"process ${ops.name} has been retried $retries times with timeout $timeout")
+      }
+  }
 
   /**
    * The main ActorRef of an Actor hosting [[Process]] instances accepts this
