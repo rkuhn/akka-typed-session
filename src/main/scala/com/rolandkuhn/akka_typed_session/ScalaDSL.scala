@@ -8,6 +8,10 @@ import scala.concurrent.duration._
 import akka.{ actor ⇒ a }
 import scala.util.control.NoStackTrace
 import scala.annotation.implicitNotFound
+import shapeless._
+import shapeless.ops._
+import shapeless.test.illTyped
+import akka.typed.scaladsl.Actor
 
 /**
  * A DSL for writing reusable behavior pieces that are executed concurrently
@@ -28,7 +32,7 @@ import scala.annotation.implicitNotFound
  *      - persistence can be plugged in transparently (NOT YET IMPLEMENTED)
  *      - recovery means acquiring state initially (which might trigger internal replay)
  */
-object ScalaProcess2 {
+object ScalaDSL {
 
   /**
    * Exception type that is thrown by the `retry` facility when after the
@@ -127,7 +131,7 @@ object ScalaProcess2 {
     trait NextStep[T] {
       def apply[U, E <: Effects](mailboxCapacity: Int, body: OpDSL { type Self = T } ⇒ Operation[T, U, E])(
         implicit opDSL: OpDSL): Operation[opDSL.Self, U, E] =
-        Call(Process("nextStep", Duration.Inf, mailboxCapacity, body(null)), None)
+        Impl.Call(Process("nextStep", Duration.Inf, mailboxCapacity, body(null)), None)
     }
     object nextStep extends NextStep[Nothing]
   }
@@ -156,7 +160,7 @@ object ScalaProcess2 {
   trait MapAdapterLow {
     private val _adapter =
       new MapAdapter[Any, Any, Any, _0] {
-        override def lift[O](f: O ⇒ Any): O ⇒ Operation[Any, Any, _0] = o ⇒ Return(f(o))
+        override def lift[O](f: O ⇒ Any): O ⇒ Operation[Any, Any, _0] = o ⇒ Impl.Return(f(o))
       }
 
     implicit def mapAdapterAny[Self, Out]: MapAdapter[Self, Out, Out, _0] =
@@ -183,7 +187,7 @@ object ScalaProcess2 {
      * input for the next computation.
      */
     def flatMap[T, EE <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE]): Process[S, T, p.Out] =
-      copy(operation = FlatMap(operation, f))
+      copy(operation = Impl.FlatMap(operation, f))
 
     /**
      * Map the value computed by this process step by the given function,
@@ -204,13 +208,21 @@ object ScalaProcess2 {
      * Only continue this process if the given predicate is fulfilled, terminate
      * it otherwise.
      */
-    def filter(p: Out ⇒ Boolean): Process[S, Out, E] = flatMap(o ⇒ if (p(o)) Return(o) else ShortCircuit)
+    def filter(p: Out ⇒ Boolean)(
+      implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Process[S, Out, pr.Out] =
+      flatMap(o ⇒
+        opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      )
 
     /**
      * Only continue this process if the given predicate is fulfilled, terminate
      * it otherwise.
      */
-    def withFilter(p: Out ⇒ Boolean): Process[S, Out, E] = flatMap(o ⇒ if (p(o)) Return(o) else ShortCircuit)
+    def withFilter(p: Out ⇒ Boolean)(
+      implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Process[S, Out, pr.Out] =
+      flatMap(o ⇒
+        opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      )
 
     /**
      * Create a copy with modified timeout parameter.
@@ -225,7 +237,7 @@ object ScalaProcess2 {
     /**
      * Convert to a runnable [[Behavior]], e.g. for being used as the guardian of an [[ActorSystem]].
      */
-    def toBehavior: Behavior[ActorCmd[S]] = ???
+    def toBehavior: Behavior[ActorCmd[S]] = Actor.deferred(ctx => new internal.ProcessInterpreter(this, ctx).execute(ctx))
   }
 
   sealed trait Effect
@@ -236,7 +248,7 @@ object ScalaProcess2 {
     sealed abstract class Send[+T] extends SessionEffect
     sealed abstract class Fork[+E <: Effects] extends Effect
     sealed abstract class Spawn[+E <: Effects] extends Effect
-    sealed abstract class Choice[+C <: :+:[_, _ <: :+:[_, _]]] extends SessionEffect
+    sealed abstract class Choice[+C <: Coproduct] extends SessionEffect
     sealed abstract class Halt extends Effect
 
     object ops {
@@ -281,59 +293,9 @@ object ScalaProcess2 {
   }
 
   sealed trait Effects
+  sealed abstract class _0 extends Effects
   sealed abstract class ::[+H <: Effect, +T <: Effects] extends Effects
   sealed abstract class Loop[+E <: Effects] extends Effects
-
-  sealed trait Choices
-  sealed abstract class :+:[+H <: Effects, +T <: Choices] extends Choices
-
-  sealed trait Processes
-  final case class :|:[+H <: Process[_, _, _], +T <: Processes](h: H, t: T) extends Processes
-
-  sealed abstract class _0 extends Effects with Choices with Processes
-  case object _0 extends _0
-
-  object Processes {
-    import language.higherKinds
-
-    sealed trait lub[P <: Processes] {
-      type Out
-    }
-    type lubAux[P <: Processes, O] = lub[P] { type Out = O }
-
-    object lub {
-      sealed trait LUB[T1, T2, Out]
-      implicit def LUB[L, T1 <: L, T2 <: L]: LUB[T1, T2, L] = null
-
-      implicit def nil: lubAux[_0, Nothing] = null
-      implicit def cons[S, O, E <: Effects, T <: Processes, LT, L](
-        implicit l: lubAux[T, LT], L: LUB[O, LT, L]): lubAux[Process[S, O, E] :|: T, L] = null
-    }
-
-    trait ForkMapper[Val[_], Eff[_ <: Effects] <: Effect] {
-      def apply[S, O, E <: Effects](p: Process[S, O, E]) = ???
-    }
-
-    sealed trait fork[P <: Processes, TC[_ <: Effects] <: Effect] {
-      type Out <: Effects
-    }
-    type forkAux[P <: Processes, TC[_ <: Effects] <: Effect, O <: Effects] = fork[P, TC] { type Out = O }
-
-    object fork {
-      implicit def nil[T[_ <: Effects] <: Effect]: forkAux[_0, T, _0] = null
-      implicit def cons[S, O, E <: Effects, TC[_ <: Effects] <: Effect, T <: Processes, TE <: Effects](
-        implicit f: forkAux[T, TC, TE]): forkAux[Process[S, O, E] :|: T, TC, TC[E] :: TE] = null
-    }
-  }
-
-  implicitly[Processes.lub.LUB[Int, Nothing, Int]]
-  implicitly[Processes.lubAux[_0, Nothing]]
-  implicitly[Processes.lubAux[Process[Any, Int, _0] :|: _0, Int]]
-  implicitly[Processes.lubAux[Process[Any, Long, _0] :|: Process[Any, Int, _0] :|: _0, AnyVal]]
-
-  implicitly[Processes.forkAux[_0, E.Fork, _0]]
-  implicitly[Processes.forkAux[Process[String, String, _0] :|: _0, E.Fork, E.Fork[_0] :: _0]]
-  implicitly[Processes.forkAux[Process[Any, Any, E.Read[Int] :: _0] :|: Process[String, String, _0] :|: _0, E.Fork, E.Fork[E.Read[Int] :: _0] :: E.Fork[_0] :: _0]]
 
   private implicit class WithEffects[S, O](op: Operation[S, O, _]) {
     def withEffects[E <: Effects]: Operation[S, O, E] = op.asInstanceOf[Operation[S, O, E]]
@@ -342,10 +304,6 @@ object ScalaProcess2 {
     def ignoreEffects: Operation[S, O, _0] = op.asInstanceOf[Operation[S, O, _0]]
   }
 
-  def opChoice[S, O, L <: Effects, R <: Effects](
-    p: Boolean, l: ⇒ Operation[S, O, L], r: ⇒ Operation[S, O, R]): Operation[S, O, E.Choice[L :+: R :+: _0] :: _0] =
-    (if (p) l else r).withEffects[E.Choice[L :+: R :+: _0] :: _0]
-
   object EffectsTest {
     import E.ops
     type A = E.Read[Any]
@@ -353,8 +311,8 @@ object ScalaProcess2 {
     type C = E.Fork[_0]
     type D = E.Spawn[_0]
 
-    //implicitly[Effects.NoSub[String, Any]]
-    //implicitly[Effects.NoSub[String, String]]
+    illTyped("implicitly[ops.NoSub[String, Any]]")
+    illTyped("implicitly[ops.NoSub[String, String]]")
     implicitly[ops.NoSub[String, Int]]
     implicitly[ops.NoSub[Any, String]]
 
@@ -371,26 +329,42 @@ object ScalaProcess2 {
     trait Protocol {
       type Session <: Effects
     }
-    object Protocol {
-      @implicitNotFound("The effects of ${E2} do not match the expected session type ${E1}")
-      sealed trait Eq[E1 <: Effects, E2 <: Effects]
-      implicit def eq[E1 <: Effects, E2 <: Effects](implicit ev: E1 =:= E2): Eq[E1, E2] = null
-    }
-
-    object MyProto extends Protocol {
-      type Session = E.Read[String] :: E.Send[String] :: Loop[E.Read[String] :: _0]
-    }
 
     def vetProtocol[E <: Effects, F <: Effects](p: Protocol, op: Operation[_, _, E])(
-      implicit f: E.ops.FilterAux[E, SessionEffect, F], ev: Protocol.Eq[p.Session, F]): Unit = ()
+      implicit f: E.ops.FilterAux[E, SessionEffect, F], ev: F <:< p.Session): Unit = ()
 
+    case class AuthRequest(credentials: String)(replyTo: ActorRef[AuthResult])
+
+    sealed trait AuthResult
+    case object AuthRejected extends AuthResult
+    case class AuthSuccess(token: ActorRef[Command]) extends AuthResult
+
+    sealed trait Command
+    case object DoIt extends Command
+
+    object MyProto extends Protocol {
+      import E._
+
+      type Session = //
+      Send[AuthRequest] :: // first ask for authentication
+      Read[AuthResult] :: // then read the response
+      Choice[(Halt :: _0) :+: _0 :+: CNil] :: // then possibly terminate if rejected
+      Send[Command] :: _0 // then send a command
+    }
+
+    def opAsk[T, U](target: ActorRef[T], msg: ActorRef[U] => T) =
+      OpDSL[U] { implicit opDSL =>
+        for {
+          self <- opProcessSelf
+          _ <- opSend(target, msg(self))
+        } yield opRead
+      }
+
+    val auth: ActorRef[AuthRequest] = ???
     val p = OpDSL[String] { implicit opDSL ⇒
-      opProcessSelf
-        .flatMap(_ ⇒ opRead)
-        .flatMap(_ ⇒
-          opSchedule(Duration.Zero, "", null)
-            .flatMap(_ ⇒ OpDSL.loopInf(_ ⇒ opRead))
-        )
+      for {
+        AuthSuccess(token) <- opCall(opAsk(auth, AuthRequest("secret")).named("getAuth"))
+      } yield opSend(token, DoIt)
     }
 
     vetProtocol(MyProto, p)
@@ -406,12 +380,13 @@ object ScalaProcess2 {
    * inside an [[OpDSL]] environment.
    */
   sealed trait Operation[S, +Out, E <: Effects] {
+
     /**
      * Execute the given computation and process step after having completed
      * the current step. The current step’s computed value will be used as
      * input for the next computation.
      */
-    def flatMap[T, EE <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE]): Operation[S, T, p.Out] = FlatMap(this, f)
+    def flatMap[T, EE <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE]): Operation[S, T, p.Out] = Impl.FlatMap(this, f)
 
     /**
      * Map the value computed by this process step by the given function,
@@ -432,13 +407,21 @@ object ScalaProcess2 {
      * Only continue this process if the given predicate is fulfilled, terminate
      * it otherwise.
      */
-    def filter(p: Out ⇒ Boolean): Operation[S, Out, E] = flatMap(o ⇒ if (p(o)) Return(o) else ShortCircuit)
+    def filter(p: Out ⇒ Boolean)(
+      implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Operation[S, Out, pr.Out] =
+      flatMap(o ⇒
+        opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      )
 
     /**
      * Only continue this process if the given predicate is fulfilled, terminate
      * it otherwise.
      */
-    def withFilter(p: Out ⇒ Boolean): Operation[S, Out, E] = flatMap(o ⇒ if (p(o)) Return(o) else ShortCircuit)
+    def withFilter(p: Out ⇒ Boolean)(
+      implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Operation[S, Out, pr.Out] =
+      flatMap(o ⇒
+        opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      )
 
     /**
      * Wrap as a [[Process]] with infinite timeout and a mailbox capacity of 1.
@@ -468,37 +451,40 @@ object ScalaProcess2 {
    * These are the private values that make up the core algebra.
    */
 
-  final case class FlatMap[S, Out1, Out2, E1 <: Effects, E2 <: Effects, E <: Effects](
-      first: Operation[S, Out1, E1], then: Out1 ⇒ Operation[S, Out2, E2]) extends Operation[S, Out2, E] {
-    override def toString: String = s"FlatMap($first)"
-  }
-  case object ShortCircuit extends Operation[Nothing, Nothing, _0] {
-    override def flatMap[T, E <: Effects](f: Nothing ⇒ Operation[Nothing, T, E])(
-      implicit p: E.ops.Prepend[_0, E]): Operation[Nothing, T, p.Out] = this.asInstanceOf[Operation[Nothing, T, p.Out]]
-  }
+  object Impl {
+    final case class FlatMap[S, Out1, Out2, E1 <: Effects, E2 <: Effects, E <: Effects](
+        first: Operation[S, Out1, E1], andThen: Out1 ⇒ Operation[S, Out2, E2]) extends Operation[S, Out2, E] {
+      override def toString: String = s"FlatMap($first)"
+    }
+    case object ShortCircuit extends Operation[Nothing, Nothing, E.Halt :: _0] {
+      override def flatMap[T, E <: Effects](f: Nothing ⇒ Operation[Nothing, T, E])(
+        implicit p: E.ops.Prepend[E.Halt :: _0, E]): Operation[Nothing, T, p.Out] = this.asInstanceOf[Operation[Nothing, T, p.Out]]
+    }
 
-  case object System extends Operation[Nothing, ActorSystem[Nothing], _0]
-  case object Read extends Operation[Nothing, Nothing, E.Read[Any] :: _0]
-  case object ProcessSelf extends Operation[Nothing, ActorRef[Any], _0]
-  case object ActorSelf extends Operation[Nothing, ActorRef[ActorCmd[Nothing]], _0]
-  final case class Return[T](value: T) extends Operation[Nothing, T, _0]
-  final case class Call[S, T, E <: Effects](process: Process[S, T, E], replacement: Option[T]) extends Operation[Nothing, T, E]
-  final case class Fork[S, E <: Effects](process: Process[S, Any, E]) extends Operation[Nothing, SubActor[S], E.Fork[E] :: _0]
-  final case class Spawn[S, E <: Effects](process: Process[S, Any, E], deployment: DeploymentConfig) extends Operation[Nothing, ActorRef[ActorCmd[S]], E.Spawn[E] :: _0]
-  final case class Schedule[T](delay: FiniteDuration, msg: T, target: ActorRef[T]) extends Operation[Nothing, a.Cancellable, E.Send[T] :: _0]
-  sealed trait AbstractWatchRef { type Msg }
-  final case class WatchRef[T](watchee: ActorRef[Nothing], msg: T, target: ActorRef[T], onFailure: Throwable ⇒ Option[T])
-      extends Operation[Nothing, a.Cancellable, _0] with AbstractWatchRef {
-    type Msg = T
-    override def equals(other: Any) = super.equals(other)
-    override def hashCode() = super.hashCode()
+    case object System extends Operation[Nothing, ActorSystem[Nothing], _0]
+    case object Read extends Operation[Nothing, Nothing, E.Read[Any] :: _0]
+    case object ProcessSelf extends Operation[Nothing, ActorRef[Any], _0]
+    case object ActorSelf extends Operation[Nothing, ActorRef[ActorCmd[Nothing]], _0]
+    final case class Choice[S, T, E <: Coproduct](ops: Operation[S, T, _0]) extends Operation[S, T, E.Choice[E] :: _0]
+    final case class Return[T](value: T) extends Operation[Nothing, T, _0]
+    final case class Call[S, T, E <: Effects](process: Process[S, T, E], replacement: Option[T]) extends Operation[Nothing, T, E]
+    final case class Fork[S, E <: Effects](process: Process[S, Any, E]) extends Operation[Nothing, SubActor[S], E.Fork[E] :: _0]
+    final case class Spawn[S, E <: Effects](process: Process[S, Any, E], deployment: Props) extends Operation[Nothing, ActorRef[ActorCmd[S]], E.Spawn[E] :: _0]
+    final case class Schedule[T](delay: FiniteDuration, msg: T, target: ActorRef[T]) extends Operation[Nothing, a.Cancellable, E.Send[T] :: _0]
+    sealed trait AbstractWatchRef { type Msg }
+    final case class WatchRef[T](watchee: ActorRef[Nothing], target: ActorRef[T], msg: T, onFailure: Throwable ⇒ Option[T])
+        extends Operation[Nothing, a.Cancellable, _0] with AbstractWatchRef {
+      type Msg = T
+      override def equals(other: Any) = super.equals(other)
+      override def hashCode() = super.hashCode()
+    }
+    //final case class Replay[T](key: StateKey[T]) extends Operation[Nothing, T]
+    //final case class Snapshot[T](key: StateKey[T]) extends Operation[Nothing, T]
+    final case class State[S, T <: StateKey[S], Ev, Ex](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ (Seq[Ev], Ex)) extends Operation[Nothing, Ex, _0]
+    final case class StateR[S, T <: StateKey[S], Ev](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ Seq[Ev]) extends Operation[Nothing, S, _0]
+    final case class Forget[T](key: StateKey[T]) extends Operation[Nothing, akka.Done, _0]
+    final case class Cleanup(cleanup: () ⇒ Unit) extends Operation[Nothing, akka.Done, _0]
   }
-  //final case class Replay[T](key: StateKey[T]) extends Operation[Nothing, T]
-  //final case class Snapshot[T](key: StateKey[T]) extends Operation[Nothing, T]
-  final case class State[S, T <: StateKey[S], Ev, Ex](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ (Seq[Ev], Ex)) extends Operation[Nothing, Ex, _0]
-  final case class StateR[S, T <: StateKey[S], Ev](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ Seq[Ev]) extends Operation[Nothing, S, _0]
-  final case class Forget[T](key: StateKey[T]) extends Operation[Nothing, akka.Done, _0]
-  final case class Cleanup(cleanup: () ⇒ Unit) extends Operation[Nothing, akka.Done, _0]
 
   /*
    * The core operations: keep these minimal!
@@ -507,27 +493,71 @@ object ScalaProcess2 {
   /**
    * Obtain a reference to the ActorSystem in which this process is running.
    */
-  def opSystem(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorSystem[Nothing], _0] = System
+  def opSystem(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorSystem[Nothing], _0] = Impl.System
 
   /**
    * Read a message from this process’ input channel.
    */
-  def opRead(implicit opDSL: OpDSL): Operation[opDSL.Self, opDSL.Self, E.Read[opDSL.Self] :: _0] = Read
+  def opRead(implicit opDSL: OpDSL): Operation[opDSL.Self, opDSL.Self, E.Read[opDSL.Self] :: _0] = Impl.Read
+
+  def opSend[T](target: ActorRef[T], msg: T)(implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, E.Send[T] :: _0] =
+    opSchedule(Duration.Zero, target, msg)
 
   /**
    * Obtain this process’ [[ActorRef]], not to be confused with the ActorRef of the Actor this process is running in.
    */
-  def opProcessSelf(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[opDSL.Self], _0] = ProcessSelf
+  def opProcessSelf(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[opDSL.Self], _0] = Impl.ProcessSelf
 
   /**
    * Obtain the [[ActorRef]] of the Actor this process is running in.
    */
-  def opActorSelf(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[ActorCmd[Nothing]], _0] = ActorSelf
+  def opActorSelf(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[ActorCmd[Nothing]], _0] = Impl.ActorSelf
 
   /**
    * Lift a plain value into a process that returns that value.
    */
-  def opUnit[U](value: U)(implicit opDSL: OpDSL): Operation[opDSL.Self, U, _0] = Return(value)
+  def opUnit[U](value: U)(implicit opDSL: OpDSL): Operation[opDSL.Self, U, _0] = Impl.Return(value)
+
+  /**
+   * Start a list of choices. The effects of the choices are accumulated in
+   * reverse order in the Coproduct within the Choice effect.
+   *
+   * {{{
+   * opChoice(x > 5, opRead)
+   *   .elseIf(x > 0, opUnit(42))
+   *   .orElse(opAsk(someActor, GetNumber))
+   * : Operation[Int, Int, Choice[
+   *     (Send[GetNumber] :: Read[Int] :: _0) :+:
+   *     _0 :+:
+   *     (Read[Int] :: _0) :+:
+   *     CNil] :: _0]
+   * }}}
+   */
+  def opChoice[S, O, E <: Effects](p: Boolean, op: ⇒ Operation[S, O, E]): OpChoice[S, Operation[S, O, _0], CNil, E :+: CNil, Operation[S, O, _0], O] =
+    if (p) new OpChoice(Some(Coproduct(op.ignoreEffects)))
+    else new OpChoice(None)
+
+  class OpChoice[S, H <: Operation[S, _, _], T <: Coproduct, E0 <: Coproduct, +O <: Operation[S, Output, _], Output](ops: Option[H :+: T])(
+      implicit u: coproduct.Unifier.Aux[H :+: T, O]) {
+
+    def elseIf[O1 >: Output, E1 <: Effects](p: => Boolean, op: => Operation[S, O1, E1])(
+      implicit u1: coproduct.Unifier.Aux[Operation[S, O1, _0] :+: H :+: T, Operation[S, O1, _0]]): OpChoice[S, Operation[S, O1, _0], H :+: T, E1 :+: E0, Operation[S, O1, _0], O1] = {
+      val ret = ops match {
+        case Some(c) => Some(c.extendLeft[Operation[S, O1, _0]])
+        case None    => if (p) Some(Coproduct[Operation[S, O1, _0] :+: H :+: T](op.ignoreEffects)) else None
+      }
+      new OpChoice(ret)
+    }
+
+    def orElse[O1 >: Output, E1 <: Effects](op: => Operation[S, O1, E1])(
+      implicit u1: coproduct.Unifier.Aux[Operation[S, O1, _0] :+: H :+: T, Operation[S, O1, _0]]): Operation[S, O1, E.Choice[E1 :+: E0] :: _0] = {
+      val ret = ops match {
+        case Some(c) => c.extendLeft[Operation[S, O1, _0]]
+        case None    => Coproduct[Operation[S, O1, _0] :+: H :+: T](op.ignoreEffects)
+      }
+      Impl.Choice[S, O1, E1 :+: E0](u1(ret))
+    }
+  }
 
   /**
    * Execute the given process within the current Actor, await and return that process’ result.
@@ -536,7 +566,7 @@ object ScalaProcess2 {
    */
   def opCall[Self, Out, E <: Effects](process: Process[Self, Out, E], replacement: Option[Out] = None)(
     implicit opDSL: OpDSL): Operation[opDSL.Self, Out, E] =
-    Call(process, replacement)
+    Impl.Call(process, replacement)
 
   /**
    * Create and execute a process with a self reference of the given type,
@@ -556,7 +586,7 @@ object ScalaProcess2 {
    * can be used to send messages to the forked process or to cancel it.
    */
   def opFork[Self, E <: Effects](process: Process[Self, Any, E])(implicit opDSL: OpDSL): Operation[opDSL.Self, SubActor[Self], E.Fork[E] :: _0] =
-    Fork(process)
+    Impl.Fork(process)
 
   /**
    * Execute the given process in a newly spawned child Actor of the current
@@ -570,15 +600,15 @@ object ScalaProcess2 {
    * between the processes hosted by that Actor and timeouts also go through
    * this mailbox.
    */
-  def opSpawn[Self, E <: Effects](process: Process[Self, Any, E], deployment: DeploymentConfig = EmptyDeploymentConfig)(
+  def opSpawn[Self, E <: Effects](process: Process[Self, Any, E], deployment: Props = Props.empty)(
     implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[ActorCmd[Self]], E.Spawn[E] :: _0] =
-    Spawn(process, deployment)
+    Impl.Spawn(process, deployment)
 
   /**
    * Schedule a message to be sent after the given delay has elapsed.
    */
-  def opSchedule[T](delay: FiniteDuration, msg: T, target: ActorRef[T])(implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, E.Send[T] :: _0] =
-    Schedule(delay, msg, target)
+  def opSchedule[T](delay: FiniteDuration, target: ActorRef[T], msg: T)(implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, E.Send[T] :: _0] =
+    Impl.Schedule(delay, msg, target)
 
   /**
    * Watch the given [[ActorRef]] and send the specified message to the given
@@ -589,9 +619,9 @@ object ScalaProcess2 {
    * If `onFailure` is provided it can override the value to be sent if the
    * watched Actor failed and was a child Actor of the Actor hosting this process.
    */
-  def opWatch[T](watchee: ActorRef[Nothing], msg: T, target: ActorRef[T], onFailure: Throwable ⇒ Option[T] = any2none)(
+  def opWatch[T](watchee: ActorRef[Nothing], target: ActorRef[T], msg: T, onFailure: Throwable ⇒ Option[T] = any2none)(
     implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, _0] =
-    WatchRef(watchee, msg, target, onFailure)
+    Impl.WatchRef(watchee, target, msg, onFailure)
 
   val any2none = (_: Any) ⇒ None
   private val _any2Nil = (state: Any) ⇒ Nil → state
@@ -603,7 +633,7 @@ object ScalaProcess2 {
    * `afterUpdates` is `true`.
    */
   def opReadState[T](key: StateKey[T], afterUpdates: Boolean = true)(implicit opDSL: OpDSL): Operation[opDSL.Self, T, _0] =
-    State[T, StateKey[T], key.Event, T](key, afterUpdates, any2Nil)
+    Impl.State[T, StateKey[T], key.Event, T](key, afterUpdates, any2Nil)
 
   /**
    * Update the state stored for the given [[StateKey]] by emitting events that
@@ -616,7 +646,7 @@ object ScalaProcess2 {
    */
   def opUpdateState[T, Ev, Ex](key: StateKey[T] { type Event = Ev }, afterUpdates: Boolean = true)(
     transform: T ⇒ (Seq[Ev], Ex))(implicit opDSL: OpDSL): Operation[opDSL.Self, Ex, _0] =
-    State(key, afterUpdates, transform)
+    Impl.State(key, afterUpdates, transform)
 
   /**
    * Update the state by emitting a sequence of events, returning the updated state. The
@@ -625,7 +655,7 @@ object ScalaProcess2 {
    */
   def opUpdateAndReadState[T, Ev](key: StateKey[T] { type Event = Ev }, afterUpdates: Boolean = true)(
     transform: T ⇒ Seq[Ev])(implicit opDSL: OpDSL): Operation[opDSL.Self, T, _0] =
-    StateR(key, afterUpdates, transform)
+    Impl.StateR(key, afterUpdates, transform)
 
   /**
    * FIXME not yet implemented
@@ -653,7 +683,7 @@ object ScalaProcess2 {
    * filled again using `updateState` or `replayPersistentState`.
    */
   def opForgetState[T](key: StateKey[T])(implicit opDSL: OpDSL): Operation[opDSL.Self, akka.Done, _0] =
-    Forget(key)
+    Impl.Forget(key)
 
   /**
    * Run the given cleanup handler after the operations that will be chained
@@ -691,7 +721,7 @@ object ScalaProcess2 {
    * }}}
    */
   def opCleanup(cleanup: () ⇒ Unit)(implicit opDSL: OpDSL): Operation[opDSL.Self, akka.Done, _0] =
-    Cleanup(cleanup)
+    Impl.Cleanup(cleanup)
 
   /**
    * Terminate processing here, ignoring further transformations. If this process
@@ -699,7 +729,7 @@ object ScalaProcess2 {
    * determines whether the calling process continues or halts as well: if no
    * replacement is given, processing cannot go on.
    */
-  def opHalt(implicit opDSL: OpDSL): Operation[opDSL.Self, Nothing, _0] = ShortCircuit
+  def opHalt(implicit opDSL: OpDSL): Operation[opDSL.Self, Nothing, E.Halt :: _0] = Impl.ShortCircuit
 
   // FIXME opChildList
   // FIXME opProcessList
@@ -776,31 +806,6 @@ object ScalaProcess2 {
    */
 
   /**
-   * Fork the given processes the return the first value emitted by any one of
-   * them. As soon as one process has yielded its value all others are canceled.
-   */
-  def firstOf[P <: Processes, T](processes: P)(implicit l: Processes.lubAux[P, T], f: Processes.fork[P, E.Fork]): Operation[T, T, f.Out] = {
-    def forkAll[P0 <: Processes](self: ActorRef[T], index: Int = 0, p: P0 = processes, acc: List[SubActor[Nothing]] = Nil)(
-      implicit opDSL: OpDSL { type Self = T }, f: Processes.fork[P0, E.Fork]): Operation[T, List[SubActor[Nothing]], f.Out] =
-      p match {
-        case _0 ⇒ opUnit(acc)
-        case x :|: xs ⇒
-          opFork(x.copy(name = s"$index-${x.name}").map(self ! _))
-            .flatMap(sub ⇒ forkAll(self, index + 1, xs, sub :: acc))
-      }
-    OpDSL[T] { implicit opDSL ⇒
-      for {
-        self ← opProcessSelf
-        subs ← forkAll(self)
-        value ← opRead
-      } yield {
-        subs.foreach(_.cancel())
-        value
-      }
-    }
-  }
-
-  /**
    * Suspend the process for the given time interval and deliver the specified
    * value afterwards. This is especially useful as a timeout value for `firstOf`.
    */
@@ -808,7 +813,7 @@ object ScalaProcess2 {
     OpDSL[T] { implicit opDSL ⇒
       for {
         self ← opProcessSelf
-        _ ← opSchedule(time, value, self)
+        _ ← opSchedule(time, self, value)
       } yield opRead
     }.ignoreEffects
 
@@ -817,12 +822,12 @@ object ScalaProcess2 {
    * first process after the given timeout.
    */
   def forkAndCancel[T, E <: Effects](timeout: FiniteDuration, process: Process[T, Any, E])(
-    implicit opDSL: OpDSL): Operation[opDSL.Self, SubActor[T], E.Fork[E] :: E.Fork[E.Send[Boolean] :: E.Read[Boolean] :: _0] :: _0] = {
+    implicit opDSL: OpDSL): Operation[opDSL.Self, SubActor[T], E.Fork[E] :: E.Fork[E.Send[Boolean] :: E.Read[Boolean] :: E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0] :: _0] = {
     def guard(sub: SubActor[T]) = OpDSL[Boolean] { implicit opDSL ⇒
       for {
         self ← opProcessSelf
-        _ ← opWatch(sub.ref, false, self)
-        _ ← opSchedule(timeout, true, self)
+        _ ← opWatch(sub.ref, self, false)
+        _ ← opSchedule(timeout, self, true)
         cancel ← opRead
         if cancel
       } yield sub.cancel()

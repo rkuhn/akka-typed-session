@@ -1,12 +1,13 @@
 /**
  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com/>
  */
-package akka.typed
+package com.rolandkuhn.akka_typed_session
 package internal
 
 import akka.{ actor ⇒ a }
 import java.util.concurrent.ArrayBlockingQueue
-import ScalaProcess._
+import akka.typed._
+import akka.typed.scaladsl.Actor
 import ScalaDSL._
 import scala.concurrent.duration._
 import scala.annotation.tailrec
@@ -41,7 +42,7 @@ import akka.event.Logging
  * TODO:
  *   enable noticing when watchee failed
  */
-private[typed] object ProcessInterpreter {
+private[akka_typed_session] object ProcessInterpreter {
 
   sealed trait TraversalState
   case object HasValue extends TraversalState
@@ -75,77 +76,81 @@ private[typed] object ProcessInterpreter {
     override def isCancelled: Boolean = true
   }
 
-  val wrapReturn = (o: Any) ⇒ Return(o).asInstanceOf[Operation[Any, Any]]
+  val wrapReturn = (o: Any) ⇒ Impl.Return(o).asInstanceOf[Operation[Any, Any, _0]]
 
   case class Timeout(deadline: Deadline) extends InternalActorCmd[Nothing]
 }
 
-private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends Behavior[ActorCmd[T]] {
+/**
+ * Important: must call .execute(ctx) upon creation and return its result as the
+ * next behavior!
+ */
+private[akka_typed_session] class ProcessInterpreter[T](
+    initial: ⇒ Process[T, Any, _],
+    ctx: scaladsl.ActorContext[ActorCmd[T]]) extends ExtensibleBehavior[ActorCmd[T]] {
   import ProcessInterpreter._
 
   // FIXME data structures to be optimized
   private var internalTriggers = Map.empty[Traversal[_], Traversal[_]]
   private val queue = new LinkedList[Traversal[_]]
   private var processRoots = Set.empty[Traversal[_]]
-  private var mainProcess: Traversal[T] = _
   private var timeouts = emptyTimeouts
   private var timeoutTask = notScheduled
-  private var watchMap = Map.empty[ActorRef[Nothing], Set[AbstractWatchRef]]
+  private var watchMap = Map.empty[ActorRef[Nothing], Set[Impl.AbstractWatchRef]]
   private var stateMap = Map.empty[StateKey[_], Any]
+  private val mainProcess: Traversal[T] = new Traversal(initial, ctx)
 
-  def management(ctx: ActorContext[ActorCmd[T]], msg: Signal): Behavior[ActorCmd[T]] = {
+  if (mainProcess.state == HasValue) triggerCompletions(ctx, mainProcess)
+  else processRoots += mainProcess
+
+  def receiveSignal(ctx: ActorContext[ActorCmd[T]], msg: Signal): Behavior[ActorCmd[T]] = {
     msg match {
-      case PreStart ⇒
-        mainProcess = new Traversal(initial, ctx)
-        if (mainProcess.state == HasValue) triggerCompletions(ctx, mainProcess)
-        else processRoots += mainProcess
-        execute(ctx)
       case PostStop ⇒
         processRoots.foreach(_.cancel())
-        Same
+        Actor.same
       case t @ Terminated(ref) ⇒
         watchMap.get(ref) match {
-          case None ⇒ Unhandled
+          case None ⇒ Actor.unhandled
           case Some(set) ⇒
-            if (t.failure == null) set.foreach { case w: WatchRef[tpe] ⇒ w.target ! w.msg }
-            else set.foreach { case w: WatchRef[tpe] ⇒ w.target ! w.onFailure(t.failure).getOrElse(w.msg) }
+            if (t.failure == null) set.foreach { case w: Impl.WatchRef[tpe] ⇒ w.target ! w.msg }
+            else set.foreach { case w: Impl.WatchRef[tpe] ⇒ w.target ! w.onFailure(t.failure).getOrElse(w.msg) }
             watchMap -= ref
-            Same
+            Actor.same
         }
-      case _ ⇒ Same
+      case _ ⇒ Actor.same
     }
   }
 
-  def message(ctx: ActorContext[ActorCmd[T]], msg: ActorCmd[T]): Behavior[ActorCmd[T]] = {
+  def receiveMessage(ctx: ActorContext[ActorCmd[T]], msg: ActorCmd[T]): Behavior[ActorCmd[T]] = {
     // for paranoia: if Timeout message is lost due to bounded mailbox (costs 50ns if nonEmpty)
     if (timeouts.nonEmpty && Deadline.now.time.toNanos - timeouts.head.time.toNanos >= 0)
       throw new TimeoutException("process timeout expired")
 
     msg match {
       case t: Traversal[_] ⇒
-        if (Debug) println(s"${ctx.self} got message for $t")
+        if (Debug) println(s"${ctx.asScala.self} got message for $t")
         if (t.isAlive) {
           t.registerReceipt()
           if (t.state == NeedsExternalInput) {
             t.dispatchInput(t.receiveOne(), t)
-            triggerCompletions(ctx, t)
+            triggerCompletions(ctx.asScala, t)
           }
         }
-        execute(ctx)
+        execute(ctx.asScala)
       case Timeout(_) ⇒
         // won’t get here anyway due to the clock check above, but is included for documentation
-        Same
+        Actor.same
       case MainCmd(cmd) ⇒
         mainProcess.ref ! cmd
-        Same
-      case _ ⇒ Unhandled
+        Actor.same
+      case _ ⇒ Actor.unhandled
     }
   }
 
   /**
    * Consume the queue of outstanding triggers.
    */
-  private def execute(ctx: ActorContext[ActorCmd[T]]): Behavior[ActorCmd[T]] = {
+  def execute(ctx: scaladsl.ActorContext[ActorCmd[T]]): Behavior[ActorCmd[T]] = {
     while (!queue.isEmpty()) {
       val traversal = queue.poll()
       if (traversal.state == NeedsTrampoline) traversal.dispatchTrampoline()
@@ -156,14 +161,14 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
       val refs = ctx.children.map(_.path.name)
       println(s"${ctx.self} execute run finished, roots = $roots, children = $refs, timeouts = $timeouts, watchMap = $watchMap")
     }
-    if (processRoots.isEmpty) Stopped else Same
+    if (processRoots.isEmpty) Actor.stopped else this
   }
 
   /**
    * This only notifies potential listeners of the computed value of a finished
    * process; the process must clean itself up beforehand.
    */
-  @tailrec private def triggerCompletions(ctx: ActorContext[ActorCmd[T]], traversal: Traversal[_]): Unit =
+  @tailrec private def triggerCompletions(ctx: scaladsl.ActorContext[ActorCmd[T]], traversal: Traversal[_]): Unit =
     if (traversal.state == HasValue) {
       if (Debug) println(s"${ctx.self} finished $traversal")
       internalTriggers.get(traversal) match {
@@ -175,7 +180,7 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
       }
     }
 
-  def addTimeout(ctx: ActorContext[ActorCmd[T]], f: FiniteDuration): Deadline = {
+  def addTimeout(ctx: scaladsl.ActorContext[ActorCmd[T]], f: FiniteDuration): Deadline = {
     var d = Deadline.now + f
     while (timeouts contains d) d += 1.nanosecond
     if (Debug) println(s"${ctx.self} adding $d")
@@ -184,7 +189,7 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
     d
   }
 
-  def removeTimeout(ctx: ActorContext[ActorCmd[T]], d: Deadline): Unit = {
+  def removeTimeout(ctx: scaladsl.ActorContext[ActorCmd[T]], d: Deadline): Unit = {
     if (Debug) println(s"${ctx.self} removing $d")
     timeouts -= d
     if (timeouts.isEmpty) {
@@ -196,17 +201,17 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
     }
   }
 
-  def scheduleTimeout(ctx: ActorContext[ActorCmd[T]], d: Deadline): Unit = {
+  def scheduleTimeout(ctx: scaladsl.ActorContext[ActorCmd[T]], d: Deadline): Unit = {
     if (Debug) println(s"${ctx.self} scheduling $d")
     timeoutTask.cancel()
     timeoutTask = ctx.schedule(d.timeLeft, ctx.self, Timeout(d))
   }
 
-  def watch(ctx: ActorContext[ActorCmd[T]], w: WatchRef[_]): Cancellable = {
+  def watch(ctx: scaladsl.ActorContext[ActorCmd[T]], w: Impl.WatchRef[_]): Cancellable = {
     val watchee = w.watchee
-    val set: Set[AbstractWatchRef] = watchMap.get(watchee) match {
+    val set: Set[Impl.AbstractWatchRef] = watchMap.get(watchee) match {
       case None ⇒
-        ctx.watch[Nothing](watchee)
+        ctx.watch(watchee)
         Set(w)
       case Some(s) ⇒ s + w
     }
@@ -220,7 +225,7 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
               val next = s - w
               if (next.isEmpty) {
                 watchMap -= watchee
-                ctx.unwatch[Nothing](watchee)
+                ctx.unwatch(watchee)
               } else {
                 watchMap = watchMap.updated(watchee, next)
               }
@@ -245,9 +250,9 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
     stateMap = stateMap.updated(key, value)
   }
 
-  private class Traversal[Tself](val process: Process[Tself, Any], ctx: ActorContext[ActorCmd[T]])
-    extends InternalActorCmd[Nothing] with Function1[Tself, ActorCmd[T]]
-    with SubActor[Tself] {
+  private class Traversal[Tself](val process: Process[Tself, Any, _], ctx: scaladsl.ActorContext[ActorCmd[T]])
+      extends InternalActorCmd[Nothing] with Function1[Tself, ActorCmd[T]]
+      with SubActor[Tself] {
 
     val deadline = process.timeout match {
       case f: FiniteDuration ⇒ addTimeout(ctx, f)
@@ -291,20 +296,23 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
     override def toString: String =
       if (Debug) {
         val stackList = stack.toList.map {
-          case null            ⇒ ""
-          case t: Traversal[_] ⇒ "Traversal"
-          case FlatMap(_, _)   ⇒ "FlatMap"
-          case other           ⇒ other.toString
+          case null               ⇒ ""
+          case t: Traversal[_]    ⇒ "Traversal"
+          case Impl.FlatMap(_, _) ⇒ "FlatMap"
+          case other              ⇒ other.toString
         }
         s"Traversal(${ref.path.name}, ${process.name}, $state, $stackList, $ptr)"
       } else super.toString
 
-    @tailrec private def depth(op: Operation[_, Any], d: Int = 0): Int =
+    @tailrec private def depth(op: Operation[_, Any, _], d: Int = 0): Int = {
+      import Impl._
       op match {
         case FlatMap(next, _)               ⇒ depth(next, d + 1)
+        case Choice(ops)                    => depth(ops, d)
         case Read | Call(_, _) | Cleanup(_) ⇒ d + 2
         case _                              ⇒ d + 1
       }
+    }
 
     /*
      * The state defines what is on the stack:
@@ -365,12 +373,16 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
      */
     def state: TraversalState = _state
 
-    private def initialize(node: Operation[_, Any]): TraversalState = {
-      @tailrec def rec(node: Operation[_, Any]): TraversalState =
+    private def initialize(node: Operation[_, Any, _]): TraversalState = {
+      import Impl._
+
+      @tailrec def rec(node: Operation[_, Any, _]): TraversalState =
         node match {
           case FlatMap(first, _) ⇒
             push(node)
             rec(first)
+          case Choice(ops) =>
+            rec(ops)
           case ShortCircuit ⇒
             push(NoValue)
             valueOrTrampoline()
@@ -451,7 +463,7 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
            * not empty right now
            */
           ensureSpace(depth(node) + 1)
-          rec(FlatMap(node.asInstanceOf[Operation[Any, Any]], wrapReturn))
+          rec(FlatMap(node.asInstanceOf[Operation[Any, Any, Effects]], wrapReturn))
         case _ ⇒
           ensureSpace(depth(node))
           rec(node)
@@ -463,13 +475,13 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
       _state match {
         case NeedsInternalInput ⇒
           assert(source eq pop())
-          val Call(proc, replacement) = pop()
+          val Impl.Call(proc, replacement) = pop()
           assert(source.process eq proc)
           if (value != NoValue) push(value) else push(replacement.getOrElse(NoValue))
           _state = valueOrTrampoline()
         case NeedsExternalInput ⇒
           assert(this eq pop())
-          assert(Read eq pop())
+          assert(Impl.Read eq pop())
           push(value)
           _state = valueOrTrampoline()
         case _ ⇒ throw new AssertionError
@@ -481,7 +493,7 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
       assert(_state == NeedsTrampoline)
       val value = pop()
       pop() match {
-        case FlatMap(_, cont) ⇒
+        case Impl.FlatMap(_, cont) ⇒
           val contOps = cont(value)
           if (Debug) println(s"${ctx.self} flatMap yielded $contOps")
           _state = initialize(contOps)
@@ -542,7 +554,8 @@ private[typed] class ProcessInterpreter[T](initial: ⇒ Process[T, Any]) extends
     }
 
     private def shutdown(): Unit = {
-      ref.sorry.sendSystem(Terminate())
+      if (Debug) println(s"${ctx.self} shutting down")
+      ctx.stop(ref)
       toRead = -1
       processRoots -= this
       if (deadline != null) removeTimeout(ctx, deadline)
