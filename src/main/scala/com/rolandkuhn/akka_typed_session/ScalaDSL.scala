@@ -7,11 +7,9 @@ import akka.typed._
 import scala.concurrent.duration._
 import akka.{ actor ⇒ a }
 import scala.util.control.NoStackTrace
-import scala.annotation.implicitNotFound
 import shapeless.{ Coproduct, :+:, CNil }
-import shapeless.ops._
-import shapeless.test.illTyped
-import akka.typed.scaladsl.Actor
+import shapeless.ops.coproduct
+import akka.typed.patterns.Receptionist
 
 /**
  * A DSL for writing reusable behavior pieces that are executed concurrently
@@ -463,6 +461,19 @@ object ScalaDSL {
         case None if retries > 0 ⇒ retry(timeout, retries - 1, ops)
         case None                ⇒ throw new RetriesExceeded(s"process ${ops.name} has been retried $retries times with timeout $timeout")
       }
+  }
+
+  // FIXME effects
+  def getService[T](key: Receptionist.ServiceKey[T]): Operation[Receptionist.Listing[T], ActorRef[T], _0] = {
+    import Receptionist._
+    OpDSL[Listing[T]] { implicit opDSL =>
+      retry(1.second, 10, (for {
+        sys <- opSystem
+        self <- opProcessSelf
+        _ <- opSend(sys.receptionist, Find(key)(self))
+        Listing(_, addresses) <- opRead
+      } yield addresses.headOption.map(opUnit(_)).getOrElse(opHalt.ignoreEffects)).named("askReceptionist")).ignoreEffects
+    }
   }
 
 }

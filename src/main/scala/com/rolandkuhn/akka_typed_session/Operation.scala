@@ -81,7 +81,7 @@ sealed trait Operation[S, +Out, E <: Effects] {
   /**
    * Wrap as a [[Process]] but without a name and convert to a [[Behavior]].
    */
-  def toBehavior: Behavior[ActorCmd[S]] = named("").toBehavior
+  def toBehavior: Behavior[ActorCmd[S]] = named("main").toBehavior
 
 }
 
