@@ -9,14 +9,14 @@ import shapeless.test.illTyped
 import scala.annotation.implicitNotFound
 
 sealed trait Effect
-sealed trait SessionEffect extends Effect
+sealed trait ExternalEffect extends Effect
 
 object E {
-  sealed abstract class Read[-T] extends SessionEffect
-  sealed abstract class Send[+T] extends SessionEffect
+  sealed abstract class Read[-T] extends ExternalEffect
+  sealed abstract class Send[+T] extends ExternalEffect
   sealed abstract class Fork[+E <: Effects] extends Effect
   sealed abstract class Spawn[+E <: Effects] extends Effect
-  sealed abstract class Choice[+C <: Coproduct] extends SessionEffect
+  sealed abstract class Choice[+C <: Coproduct] extends ExternalEffect
   sealed abstract class Halt extends Effect
 
   object ops {
@@ -58,6 +58,25 @@ object E {
     implicit def noSub2[T <: U, U]: NoSub[T, U] = null
     implicit def noSub3[T <: U, U]: NoSub[T, U] = null
   }
+
+  trait Protocol {
+    type Session <: Effects
+  }
+
+  def vetExternalProtocol[E <: Effects, F <: Effects](p: Protocol, op: Operation[_, _, E])(
+    implicit f: E.ops.FilterAux[E, ExternalEffect, F],
+    ev: F <:< p.Session): Unit = ()
+
+  trait OpFunAux[OpFun, E <: Effects]
+  object OpFunAux {
+    implicit def opFun1[E <: Effects]: OpFunAux[Function1[_, Operation[_, _, E]], E] = null
+    implicit def opFun2[E <: Effects]: OpFunAux[Function2[_, _, Operation[_, _, E]], E] = null
+    implicit def opFun3[E <: Effects]: OpFunAux[Function3[_, _, _, Operation[_, _, E]], E] = null
+    implicit def opFun4[E <: Effects]: OpFunAux[Function4[_, _, _, _, Operation[_, _, E]], E] = null
+    implicit def opFun5[E <: Effects]: OpFunAux[Function5[_, _, _, _, _, Operation[_, _, E]], E] = null
+    implicit def opFun6[E <: Effects]: OpFunAux[Function6[_, _, _, _, _, _, Operation[_, _, E]], E] = null
+    implicit def opFun7[E <: Effects]: OpFunAux[Function7[_, _, _, _, _, _, _, Operation[_, _, E]], E] = null
+  }
 }
 
 sealed trait Effects
@@ -66,7 +85,7 @@ sealed abstract class ::[+H <: Effect, +T <: Effects] extends Effects
 sealed abstract class Loop[+E <: Effects] extends Effects
 
 object EffectsTest {
-  import E.ops
+  import E._
   type A = E.Read[Any]
   type B = E.Send[Any]
   type C = E.Fork[_0]
@@ -82,17 +101,10 @@ object EffectsTest {
   implicitly[ops.PrependAux[A :: B :: _0, _0, A :: B :: _0]]
   implicitly[ops.PrependAux[A :: B :: _0, C :: D :: _0, A :: B :: C :: D :: _0]]
 
-  implicitly[ops.FilterAux[A :: B :: C :: D :: _0, SessionEffect, A :: B :: _0]]
-  implicitly[ops.FilterAux[Loop[_0], SessionEffect, Loop[_0]]]
-  implicitly[ops.FilterAux[A :: Loop[_0], SessionEffect, A :: Loop[_0]]]
-  implicitly[ops.FilterAux[A :: B :: C :: Loop[D :: A :: C :: B :: D :: _0], SessionEffect, A :: B :: Loop[A :: B :: _0]]]
-
-  trait Protocol {
-    type Session <: Effects
-  }
-
-  def vetProtocol[E <: Effects, F <: Effects](p: Protocol, op: Operation[_, _, E])(
-    implicit f: E.ops.FilterAux[E, SessionEffect, F], ev: F <:< p.Session): Unit = ()
+  implicitly[ops.FilterAux[A :: B :: C :: D :: _0, ExternalEffect, A :: B :: _0]]
+  implicitly[ops.FilterAux[Loop[_0], ExternalEffect, Loop[_0]]]
+  implicitly[ops.FilterAux[A :: Loop[_0], ExternalEffect, A :: Loop[_0]]]
+  implicitly[ops.FilterAux[A :: B :: C :: Loop[D :: A :: C :: B :: D :: _0], ExternalEffect, A :: B :: Loop[A :: B :: _0]]]
 
   case class AuthRequest(credentials: String)(replyTo: ActorRef[AuthResult])
 
@@ -130,6 +142,6 @@ object EffectsTest {
     } yield opSend(token, DoIt)
   }
 
-  vetProtocol(MyProto, p)
+  vetExternalProtocol(MyProto, p)
 
 }

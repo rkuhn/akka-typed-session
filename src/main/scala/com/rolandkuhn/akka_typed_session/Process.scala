@@ -67,6 +67,11 @@ final case class Process[S, +Out, E <: Effects](
     )
 
   /**
+   * Create a copy with modified name.
+   */
+  def named(name: String): Process[S, Out, E] = copy(name = name)
+
+  /**
    * Create a copy with modified timeout parameter.
    */
   def withTimeout(timeout: Duration): Process[S, Out, E] = copy(timeout = timeout)
