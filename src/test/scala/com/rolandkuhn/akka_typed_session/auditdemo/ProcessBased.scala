@@ -54,17 +54,17 @@ object ProcessBased {
     type Session = //
     E.Send[LogActivity] :: // preAudit
     E.Read[ActivityLogged] :: //
-    E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: // possibly terminate
+    E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: // possibly terminate
     E.Send[Authorize] :: // do payment
     E.Read[PaymentResult] :: //
-    E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: // possibly terminate
+    E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: // possibly terminate
     E.Send[Capture] :: //
     E.Read[PaymentResult] :: //
-    E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: // possibly terminate
+    E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: // possibly terminate
     E.Send[LogActivity] :: // postAudit
     E.Read[ActivityLogged] :: //
-    E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: // possibly terminate
-    _0
+    E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: // possibly terminate
+    HNil
   }
 
   // compile-time verification

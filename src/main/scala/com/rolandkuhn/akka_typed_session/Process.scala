@@ -51,9 +51,9 @@ final case class Process[S, +Out, E <: Effects](
    * it otherwise.
    */
   def filter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Process[S, Out, pr.Out] =
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Process[S, Out, pr.Out] =
     flatMap(o ⇒
-      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
 
   /**
@@ -61,9 +61,9 @@ final case class Process[S, +Out, E <: Effects](
    * it otherwise.
    */
   def withFilter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Process[S, Out, pr.Out] =
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Process[S, Out, pr.Out] =
     flatMap(o ⇒
-      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
 
   /**

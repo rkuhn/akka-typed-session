@@ -46,9 +46,9 @@ sealed trait Operation[S, +Out, E <: Effects] {
    * it otherwise.
    */
   def filter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Operation[S, Out, pr.Out] =
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Operation[S, Out, pr.Out] =
     flatMap(o ⇒
-      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
 
   /**
@@ -56,9 +56,9 @@ sealed trait Operation[S, +Out, E <: Effects] {
    * it otherwise.
    */
   def withFilter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: _0) :+: _0 :+: CNil] :: _0]): Operation[S, Out, pr.Out] =
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Operation[S, Out, pr.Out] =
     flatMap(o ⇒
-      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, _0]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: _0])
+      ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
 
   /**
@@ -94,32 +94,32 @@ object Impl {
       first: Operation[S, Out1, E1], andThen: Out1 ⇒ Operation[S, Out2, E2]) extends Operation[S, Out2, E] {
     override def toString: String = s"FlatMap($first)"
   }
-  case object ShortCircuit extends Operation[Nothing, Nothing, E.Halt :: _0] {
+  case object ShortCircuit extends Operation[Nothing, Nothing, E.Halt :: HNil] {
     override def flatMap[T, E <: Effects](f: Nothing ⇒ Operation[Nothing, T, E])(
-      implicit p: E.ops.Prepend[E.Halt :: _0, E]): Operation[Nothing, T, p.Out] = this.asInstanceOf[Operation[Nothing, T, p.Out]]
+      implicit p: E.ops.Prepend[E.Halt :: HNil, E]): Operation[Nothing, T, p.Out] = this.asInstanceOf[Operation[Nothing, T, p.Out]]
   }
 
-  case object System extends Operation[Nothing, ActorSystem[Nothing], _0]
-  case object Read extends Operation[Nothing, Nothing, E.Read[Any] :: _0]
-  case object ProcessSelf extends Operation[Nothing, ActorRef[Any], _0]
-  case object ActorSelf extends Operation[Nothing, ActorRef[ActorCmd[Nothing]], _0]
-  final case class Choice[S, T, E <: Coproduct](ops: Operation[S, T, _0]) extends Operation[S, T, E.Choice[E] :: _0]
-  final case class Return[T](value: T) extends Operation[Nothing, T, _0]
+  case object System extends Operation[Nothing, ActorSystem[Nothing], HNil]
+  case object Read extends Operation[Nothing, Nothing, E.Read[Any] :: HNil]
+  case object ProcessSelf extends Operation[Nothing, ActorRef[Any], HNil]
+  case object ActorSelf extends Operation[Nothing, ActorRef[ActorCmd[Nothing]], HNil]
+  final case class Choice[S, T, E <: Coproduct](ops: Operation[S, T, HNil]) extends Operation[S, T, E.Choice[E] :: HNil]
+  final case class Return[T](value: T) extends Operation[Nothing, T, HNil]
   final case class Call[S, T, E <: Effects](process: Process[S, T, E], replacement: Option[T]) extends Operation[Nothing, T, E]
-  final case class Fork[S, E <: Effects](process: Process[S, Any, E]) extends Operation[Nothing, SubActor[S], E.Fork[E] :: _0]
-  final case class Spawn[S, E <: Effects](process: Process[S, Any, E], deployment: Props) extends Operation[Nothing, ActorRef[ActorCmd[S]], E.Spawn[E] :: _0]
-  final case class Schedule[T](delay: FiniteDuration, msg: T, target: ActorRef[T]) extends Operation[Nothing, a.Cancellable, E.Send[T] :: _0]
+  final case class Fork[S, E <: Effects](process: Process[S, Any, E]) extends Operation[Nothing, SubActor[S], E.Fork[E] :: HNil]
+  final case class Spawn[S, E <: Effects](process: Process[S, Any, E], deployment: Props) extends Operation[Nothing, ActorRef[ActorCmd[S]], E.Spawn[E] :: HNil]
+  final case class Schedule[T](delay: FiniteDuration, msg: T, target: ActorRef[T]) extends Operation[Nothing, a.Cancellable, E.Send[T] :: HNil]
   sealed trait AbstractWatchRef { type Msg }
   final case class WatchRef[T](watchee: ActorRef[Nothing], target: ActorRef[T], msg: T, onFailure: Throwable ⇒ Option[T])
-      extends Operation[Nothing, a.Cancellable, _0] with AbstractWatchRef {
+      extends Operation[Nothing, a.Cancellable, HNil] with AbstractWatchRef {
     type Msg = T
     override def equals(other: Any) = super.equals(other)
     override def hashCode() = super.hashCode()
   }
   //final case class Replay[T](key: StateKey[T]) extends Operation[Nothing, T]
   //final case class Snapshot[T](key: StateKey[T]) extends Operation[Nothing, T]
-  final case class State[S, T <: StateKey[S], Ev, Ex](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ (Seq[Ev], Ex)) extends Operation[Nothing, Ex, _0]
-  final case class StateR[S, T <: StateKey[S], Ev](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ Seq[Ev]) extends Operation[Nothing, S, _0]
-  final case class Forget[T](key: StateKey[T]) extends Operation[Nothing, akka.Done, _0]
-  final case class Cleanup(cleanup: () ⇒ Unit) extends Operation[Nothing, akka.Done, _0]
+  final case class State[S, T <: StateKey[S], Ev, Ex](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ (Seq[Ev], Ex)) extends Operation[Nothing, Ex, HNil]
+  final case class StateR[S, T <: StateKey[S], Ev](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ Seq[Ev]) extends Operation[Nothing, S, HNil]
+  final case class Forget[T](key: StateKey[T]) extends Operation[Nothing, akka.Done, HNil]
+  final case class Cleanup(cleanup: () ⇒ Unit) extends Operation[Nothing, akka.Done, HNil]
 }

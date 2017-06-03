@@ -20,7 +20,6 @@ object E {
   sealed abstract class Halt extends Effect
 
   object ops {
-    import language.higherKinds
 
     @implicitNotFound("Cannot prepend ${First} to ${Second} (e.g. due to infinite loop in the first argument)")
     sealed trait Prepend[First <: Effects, Second <: Effects] {
@@ -33,10 +32,10 @@ object E {
         implicit ev: Prepend[T, S]): PrependAux[H :: T, S, H :: ev.Out] = null
     }
     sealed trait PrependLow extends PrependLowLow {
-      implicit def prependNil[F <: _0, S <: Effects]: PrependAux[F, S, S] = null
+      implicit def prependNil[F <: HNil, S <: Effects]: PrependAux[F, S, S] = null
     }
     object Prepend extends PrependLow {
-      implicit def prependToNil[F <: Effects, S <: _0]: PrependAux[F, S, F] = null
+      implicit def prependToNil[F <: Effects, S <: HNil]: PrependAux[F, S, F] = null
     }
 
     sealed trait Filter[E <: Effects, U] {
@@ -49,7 +48,7 @@ object E {
       implicit def loop[E <: Effects, U](implicit f: Filter[E, U]): FilterAux[Loop[E], U, Loop[f.Out]] = null
     }
     object Filter extends FilterLow {
-      implicit def nil[U]: FilterAux[_0, U, _0] = null
+      implicit def nil[U]: FilterAux[HNil, U, HNil] = null
       implicit def found[H <: Effect, T <: Effects, U >: H](implicit f: Filter[T, U]): FilterAux[H :: T, U, H :: f.Out] = null
     }
 
@@ -80,68 +79,68 @@ object E {
 }
 
 sealed trait Effects
-sealed abstract class _0 extends Effects
+sealed abstract class HNil extends Effects
 sealed abstract class ::[+H <: Effect, +T <: Effects] extends Effects
 sealed abstract class Loop[+E <: Effects] extends Effects
 
-object EffectsTest {
-  import E._
-  type A = E.Read[Any]
-  type B = E.Send[Any]
-  type C = E.Fork[_0]
-  type D = E.Spawn[_0]
-
-  illTyped("implicitly[ops.NoSub[String, Any]]")
-  illTyped("implicitly[ops.NoSub[String, String]]")
-  implicitly[ops.NoSub[String, Int]]
-  implicitly[ops.NoSub[Any, String]]
-
-  implicitly[ops.PrependAux[_0, _0, _0]]
-  implicitly[ops.PrependAux[_0, A :: B :: _0, A :: B :: _0]]
-  implicitly[ops.PrependAux[A :: B :: _0, _0, A :: B :: _0]]
-  implicitly[ops.PrependAux[A :: B :: _0, C :: D :: _0, A :: B :: C :: D :: _0]]
-
-  implicitly[ops.FilterAux[A :: B :: C :: D :: _0, ExternalEffect, A :: B :: _0]]
-  implicitly[ops.FilterAux[Loop[_0], ExternalEffect, Loop[_0]]]
-  implicitly[ops.FilterAux[A :: Loop[_0], ExternalEffect, A :: Loop[_0]]]
-  implicitly[ops.FilterAux[A :: B :: C :: Loop[D :: A :: C :: B :: D :: _0], ExternalEffect, A :: B :: Loop[A :: B :: _0]]]
-
-  case class AuthRequest(credentials: String)(replyTo: ActorRef[AuthResult])
-
-  sealed trait AuthResult
-  case object AuthRejected extends AuthResult
-  case class AuthSuccess(token: ActorRef[Command]) extends AuthResult
-
-  sealed trait Command
-  case object DoIt extends Command
-
-  object MyProto extends Protocol {
-    import E._
-
-    type Session = //
-    Send[AuthRequest] :: // first ask for authentication
-    Read[AuthResult] :: // then read the response
-    Choice[(Halt :: _0) :+: _0 :+: CNil] :: // then possibly terminate if rejected
-    Send[Command] :: _0 // then send a command
-  }
-
-  import ScalaDSL._
-
-  def opAsk[T, U](target: ActorRef[T], msg: ActorRef[U] => T) =
-    OpDSL[U] { implicit opDSL =>
-      for {
-        self <- opProcessSelf
-        _ <- opSend(target, msg(self))
-      } yield opRead
-    }
-
-  val auth: ActorRef[AuthRequest] = ???
-  val p = OpDSL[String] { implicit opDSL ⇒
-    for {
-      AuthSuccess(token) <- opCall(opAsk(auth, AuthRequest("secret")).named("getAuth"))
-    } yield opSend(token, DoIt)
-  }
-
-  vetExternalProtocol(MyProto, p)
-
-}
+//object EffectsTest {
+//  import E._
+//  type A = E.Read[Any]
+//  type B = E.Send[Any]
+//  type C = E.Fork[HNil]
+//  type D = E.Spawn[HNil]
+//
+//  illTyped("implicitly[ops.NoSub[String, Any]]")
+//  illTyped("implicitly[ops.NoSub[String, String]]")
+//  implicitly[ops.NoSub[String, Int]]
+//  implicitly[ops.NoSub[Any, String]]
+//
+//  implicitly[ops.PrependAux[HNil, HNil, HNil]]
+//  implicitly[ops.PrependAux[HNil, A :: B :: HNil, A :: B :: HNil]]
+//  implicitly[ops.PrependAux[A :: B :: HNil, HNil, A :: B :: HNil]]
+//  implicitly[ops.PrependAux[A :: B :: HNil, C :: D :: HNil, A :: B :: C :: D :: HNil]]
+//
+//  implicitly[ops.FilterAux[A :: B :: C :: D :: HNil, ExternalEffect, A :: B :: HNil]]
+//  implicitly[ops.FilterAux[Loop[HNil], ExternalEffect, Loop[HNil]]]
+//  implicitly[ops.FilterAux[A :: Loop[HNil], ExternalEffect, A :: Loop[HNil]]]
+//  implicitly[ops.FilterAux[A :: B :: C :: Loop[D :: A :: C :: B :: D :: HNil], ExternalEffect, A :: B :: Loop[A :: B :: HNil]]]
+//
+//  case class AuthRequest(credentials: String)(replyTo: ActorRef[AuthResult])
+//
+//  sealed trait AuthResult
+//  case object AuthRejected extends AuthResult
+//  case class AuthSuccess(token: ActorRef[Command]) extends AuthResult
+//
+//  sealed trait Command
+//  case object DoIt extends Command
+//
+//  object MyProto extends Protocol {
+//    import E._
+//
+//    type Session = //
+//    Send[AuthRequest] :: // first ask for authentication
+//    Read[AuthResult] :: // then read the response
+//    Choice[(Halt :: HNil) :+: HNil :+: CNil] :: // then possibly terminate if rejected
+//    Send[Command] :: HNil // then send a command
+//  }
+//
+//  import ScalaDSL._
+//
+//  def opAsk[T, U](target: ActorRef[T], msg: ActorRef[U] => T) =
+//    OpDSL[U] { implicit opDSL =>
+//      for {
+//        self <- opProcessSelf
+//        _ <- opSend(target, msg(self))
+//      } yield opRead
+//    }
+//
+//  val auth: ActorRef[AuthRequest] = ???
+//  val p = OpDSL[String] { implicit opDSL ⇒
+//    for {
+//      AuthSuccess(token) <- opCall(opAsk(auth, AuthRequest("secret")).named("getAuth"))
+//    } yield opSend(token, DoIt)
+//  }
+//
+//  vetExternalProtocol(MyProto, p)
+//
+//}

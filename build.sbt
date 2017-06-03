@@ -1,7 +1,7 @@
 name := "akka-typed-session"
 version := "0.1.0-SNAPSHOT"
 organization := "com.rolandkuhn"
-scalaVersion := "2.12.2"
+scalaVersion := "0.1.2-RC1"
 
 scalacOptions += "-deprecation"
 logBuffered in Test := false
@@ -16,4 +16,4 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-typed-testkit" % akkaVersion % "test",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
-)
+).map(lib => lib.withDottyCompat())

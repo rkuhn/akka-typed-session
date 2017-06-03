@@ -76,7 +76,7 @@ private[akka_typed_session] object ProcessInterpreter {
     override def isCancelled: Boolean = true
   }
 
-  val wrapReturn = (o: Any) ⇒ Impl.Return(o).asInstanceOf[Operation[Any, Any, _0]]
+  val wrapReturn = (o: Any) ⇒ Impl.Return(o).asInstanceOf[Operation[Any, Any, HNil]]
 
   case class Timeout(deadline: Deadline) extends InternalActorCmd[Nothing]
 }

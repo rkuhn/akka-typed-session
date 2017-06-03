@@ -14,7 +14,7 @@ package object akka_typed_session {
     def withEffects[E <: Effects]: Operation[S, O, E] = op.asInstanceOf[Operation[S, O, E]]
   }
   implicit class WithoutEffects[S, O](op: Operation[S, O, _]) {
-    def ignoreEffects: Operation[S, O, _0] = op.asInstanceOf[Operation[S, O, _0]]
+    def ignoreEffects: Operation[S, O, HNil] = op.asInstanceOf[Operation[S, O, HNil]]
   }
 
 }

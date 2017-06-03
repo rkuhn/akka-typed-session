@@ -16,6 +16,7 @@ import org.scalatest.prop.PropertyChecks
 import scala.collection.immutable.TreeSet
 import scala.util.Random
 import akka.typed.testkit._
+import shapeless.{ :+:, CNil }
 
 object ProcessSpec {
 
@@ -60,11 +61,17 @@ class ProcessSpec extends TypedSpec {
       val backendStore =
         OpDSL.loopInf[Store] { implicit opDSL ⇒
           for (GetData(replyTo) ← opRead) yield {
-            replyTo ! DataResult("yeehah")
+            opSend(replyTo, DataResult("yeehah"))
           }
         }
 
-      val backend =
+      import E._
+      type MayHalt = Choice[(E.Halt :: HNil) :+: HNil :+: CNil]
+
+      val backend: Operation[ProcessSpec.Login, Nothing, //
+      Read[Registered[ProcessSpec.Login]] :: //
+      Fork[Loop[Read[ProcessSpec.Store] :: MayHalt :: Send[DataResult] :: HNil]] :: //
+      Loop[Read[ProcessSpec.Login] :: MayHalt :: Send[AuthSuccess] :: HNil]] =
         OpDSL[Login] { implicit opDSL ⇒
           for {
             self ← opProcessSelf
@@ -72,7 +79,7 @@ class ProcessSpec extends TypedSpec {
             store ← opFork(backendStore.named("store"))
           } yield OpDSL.loopInf { _ ⇒
             for (Login(replyTo) ← opRead) yield {
-              replyTo ! AuthSuccess(store.ref)
+              opSend(replyTo, AuthSuccess(store.ref))
             }
           }
         }
