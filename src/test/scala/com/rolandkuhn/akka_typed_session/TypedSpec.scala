@@ -15,7 +15,7 @@ import com.typesafe.config.ConfigFactory
 import akka.util.Timeout
 
 import scala.reflect.ClassTag
-import akka.actor.ActorInitializationException
+import akka.actor.{ ActorInitializationException, Scheduler }
 import akka.typed._
 
 import language.existentials
@@ -39,7 +39,7 @@ import akka.testkit.EventFilter
 class TypedSpecSetup extends RefSpec with Matchers with BeforeAndAfterAll with ScalaFutures with TypeCheckedTripleEquals {
 
   // TODO hook this up with config like in akka-testkit/AkkaSpec?
-  implicit val akkaPatience = PatienceConfig(3.seconds, Span(100, org.scalatest.time.Millis))
+  implicit val akkaPatience: PatienceConfig = PatienceConfig(3.seconds, Span(100, org.scalatest.time.Millis))
 
 }
 
@@ -70,8 +70,8 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
     sys
   }
 
-  implicit val timeout = setTimeout
-  implicit def scheduler = nativeSystem.scheduler
+  implicit val timeout: Timeout = setTimeout
+  implicit def scheduler: Scheduler = nativeSystem.scheduler
 
   trait StartSupport {
     def system: ActorSystem[TypedSpec.Command]

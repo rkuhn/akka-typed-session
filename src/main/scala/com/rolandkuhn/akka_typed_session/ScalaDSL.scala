@@ -119,7 +119,7 @@ object ScalaDSL {
     private object next extends Next[Nothing]
 
     trait NextStep[T] {
-      def apply[U, E <: Effects, TO](mailboxCapacity: Int, body: OpDSL[T] ⇒ Operation[T, U, E])(
+      def apply[U, E <: Effects, TO](mailboxCapacity: Int, body: implicit OpDSL[T] ⇒ Operation[T, U, E])(
         implicit opDSL: OpDSL[TO]): Operation[TO, U, E] =
         Impl.Call(Process("nextStep", Duration.Inf, mailboxCapacity, body(null)), None)
     }

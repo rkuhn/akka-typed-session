@@ -3,7 +3,7 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed._
+import akka.typed.{ ActorRef, ActorSystem, Behavior }
 import ScalaDSL._
 import akka.typed.patterns.Receptionist._
 import scala.concurrent.duration._
@@ -48,7 +48,7 @@ class ProcessSpec extends TypedSpec {
     def `demonstrates working processes`(): Unit = {
 
       def register[T](server: ActorRef[T], key: ServiceKey[T]) =
-        OpDSL[Registered[T]] { implicit opDSL ⇒
+        OpDSL[Registered[T]] {
           for {
             self ← opProcessSelf
             sys ← opSystem
@@ -59,7 +59,7 @@ class ProcessSpec extends TypedSpec {
         }
 
       val backendStore =
-        OpDSL.loopInf[Store] { implicit opDSL ⇒
+        OpDSL.loopInf[Store] {
           for (GetData(replyTo) ← opRead) yield {
             opSend(replyTo, DataResult("yeehah"))
           }
@@ -72,12 +72,12 @@ class ProcessSpec extends TypedSpec {
       Read[Registered[ProcessSpec.Login]] :: //
       Fork[Loop[Read[ProcessSpec.Store] :: MayHalt :: Send[DataResult] :: HNil]] :: //
       Loop[Read[ProcessSpec.Login] :: MayHalt :: Send[AuthSuccess] :: HNil]] =
-        OpDSL[Login] { implicit opDSL ⇒
+        OpDSL[Login] {
           for {
             self ← opProcessSelf
             _ ← opCall(register(self, LoginService).named("registerBackend"))
             store ← opFork(backendStore.named("store"))
-          } yield OpDSL.loopInf { _ ⇒
+          } yield OpDSL.loopInf[Login] {
             for (Login(replyTo) ← opRead) yield {
               opSend(replyTo, AuthSuccess(store.ref))
             }
@@ -85,7 +85,7 @@ class ProcessSpec extends TypedSpec {
         }
 
       val getBackend =
-        OpDSL[Listing[Login]] { implicit opDSL ⇒
+        OpDSL[Listing[Login]] {
           for {
             self ← opProcessSelf
             system ← opSystem
@@ -94,12 +94,12 @@ class ProcessSpec extends TypedSpec {
         }
 
       def talkWithBackend(backend: ActorRef[Login], req: Request) =
-        OpDSL[AuthResult] { implicit opDSL ⇒
+        OpDSL[AuthResult] {
           for {
             self ← opProcessSelf
             _ ← opUnit({ backend ! Login(self) })
             AuthSuccess(store) ← opRead
-            data ← opNextStep[DataResult](1, { implicit opDSL ⇒
+            data ← opNextStep[DataResult](1, {
               for {
                 self ← opProcessSelf
                 _ = store ! GetData(self)
@@ -109,19 +109,19 @@ class ProcessSpec extends TypedSpec {
         }
 
       val server =
-        OpDSL[Request] { implicit op ⇒
+        OpDSL[Request] {
           for {
             _ ← opSpawn(backend.named("backend"))
             self ← opProcessSelf
             _ ← retry(1.second, 3, register(self, RequestService).named("register"))
             backend ← retry(1.second, 3, getBackend.named("getBackend"))
-          } yield OpDSL.loopInf { _ ⇒
+          } yield OpDSL.loopInf[Request] {
             for (req ← opRead) yield forkAndCancel(5.seconds, talkWithBackend(backend.addresses.head, req).named("worker"))
           }
         }
 
       sync(runTest("complexOperations") {
-        OpDSL[Response] { implicit opDSL ⇒
+        OpDSL[Response] {
           for {
             serverRef ← opSpawn(server.named("server").withMailboxCapacity(20))
             self ← opProcessSelf
@@ -145,9 +145,9 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must spawn`(): Unit = sync(runTest("spawn") {
-      OpDSL[Done] { implicit opDSL ⇒
+      OpDSL[Done] {
         for {
-          child ← opSpawn(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+          child ← opSpawn(OpDSL[ActorRef[Done]] {
             opRead.map(_ ! Done)
           }.named("child").withMailboxCapacity(2))
           self ← opProcessSelf
@@ -158,9 +158,9 @@ class ProcessSpec extends TypedSpec {
     })
 
     def `must spawn anonymously`(): Unit = sync(runTest("spawnAnonymous") {
-      OpDSL[Done] { implicit opDSL ⇒
+      OpDSL[Done] {
         for {
-          child ← opSpawn(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+          child ← opSpawn(OpDSL[ActorRef[Done]] {
             opRead.map(_ ! Done)
           }.withMailboxCapacity(2))
           self ← opProcessSelf
@@ -171,7 +171,7 @@ class ProcessSpec extends TypedSpec {
     })
 
     def `must watch`(): Unit = sync(runTest("watch") {
-      OpDSL[Done] { implicit opDSL ⇒
+      OpDSL[Done] {
         for {
           self ← opProcessSelf
           child ← opSpawn(opUnit(()).named("unit"))
@@ -181,7 +181,7 @@ class ProcessSpec extends TypedSpec {
     })
 
     def `must watch and report failure`(): Unit = sync(runTest("watch") {
-      OpDSL[Throwable] { implicit opDSL ⇒
+      OpDSL[Throwable] {
         for {
           self ← opProcessSelf
           filter = muteExpectedException[TimeoutException](occurrences = 1)
@@ -189,14 +189,15 @@ class ProcessSpec extends TypedSpec {
           _ ← opWatch(child, self, null, Some(_))
           thr ← opRead
         } yield {
-          thr shouldBe a[TimeoutException]
+          // thr shouldBe a[TimeoutException]
+          thr.getClass should be(classOf[TimeoutException])
           filter.awaitDone(100.millis)
         }
       }.withTimeout(3.seconds).toBehavior
     })
 
     def `must unwatch`(): Unit = sync(runTest("unwatch") {
-      OpDSL[String] { implicit opDSL ⇒
+      OpDSL[String] {
         for {
           self ← opProcessSelf
           child ← opSpawn(opUnit(()).named("unit"))
@@ -208,7 +209,7 @@ class ProcessSpec extends TypedSpec {
     })
 
     def `must respect timeouts`(): Unit = sync(runTest("timeout") {
-      OpDSL[Done] { implicit opDSL ⇒
+      OpDSL[Done] {
         for {
           self ← opProcessSelf
           filter = muteExpectedException[TimeoutException](occurrences = 1)
@@ -220,14 +221,14 @@ class ProcessSpec extends TypedSpec {
     })
 
     def `must cancel timeouts`(): Unit = sync(runTest("timeout") {
-      val childProc = OpDSL[String] { implicit opDSL ⇒
+      val childProc = OpDSL[String] {
         for {
           self ← opProcessSelf
-          _ ← opFork(OpDSL[String] { _ ⇒ self ! ""; opRead }.named("read").withTimeout(1.second))
+          _ ← opFork(OpDSL[String] { self ! ""; opRead }.named("read").withTimeout(1.second))
         } yield opRead
       }.named("child").withTimeout(100.millis)
 
-      OpDSL[Done] { implicit opDSL ⇒
+      OpDSL[Done] {
         for {
           self ← opProcessSelf
           start = Deadline.now
@@ -245,7 +246,7 @@ class ProcessSpec extends TypedSpec {
     })
 
     def `must name process refs appropriately`(): Unit = sync(runTest("naming") {
-      OpDSL[Done] { implicit opDSL ⇒
+      OpDSL[Done] {
         opProcessSelf.map { self ⇒
           val name = self.path.name
           withClue(s" name=$name") {
@@ -282,7 +283,7 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must name process refs appropriately (EffectfulActorContext)`(): Unit = {
-      val ctx = new EffectfulActorContext("name", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("name", OpDSL[ActorRef[Done]] {
         opRead
       }.named("read").toBehavior, 1, system)
       val Effect.Spawned(name) :: Nil = ctx.getAllEffects()
@@ -295,7 +296,7 @@ class ProcessSpec extends TypedSpec {
 
     def `must read`(): Unit = {
       val ret = Inbox[Done]("readRet")
-      val ctx = new EffectfulActorContext("read", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("read", OpDSL[ActorRef[Done]] {
         opRead.map(_ ! Done)
       }.named("read").toBehavior, 1, system)
 
@@ -320,8 +321,8 @@ class ProcessSpec extends TypedSpec {
 
     def `must call`(): Unit = {
       val ret = Inbox[Done]("callRet")
-      val ctx = new EffectfulActorContext("call", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
-        opRead.flatMap(replyTo ⇒ opCall(OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("call", OpDSL[ActorRef[Done]] {
+        opRead.flatMap(replyTo ⇒ opCall(OpDSL[String] {
           opUnit(replyTo ! Done)
         }.named("called")))
       }.named("call").toBehavior, 1, system)
@@ -349,7 +350,7 @@ class ProcessSpec extends TypedSpec {
 
     def `must fork`(): Unit = {
       val ret = Inbox[Done]("callRet")
-      val ctx = new EffectfulActorContext("call", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("call", OpDSL[ActorRef[Done]] {
         opFork(opRead.map(_ ! Done).named("forkee"))
           .map { sub ⇒
             opRead.map(sub.ref ! _)
@@ -393,7 +394,7 @@ class ProcessSpec extends TypedSpec {
     def `must return all the things`(): Unit = {
       case class Info(sys: ActorSystem[Nothing], proc: ActorRef[Nothing], actor: ActorRef[Nothing], value: Int)
       val ret = Inbox[Info]("thingsRet")
-      val ctx = new EffectfulActorContext("things", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("things", OpDSL[ActorRef[Done]] {
         for {
           sys ← opSystem
           proc ← opProcessSelf
@@ -415,7 +416,7 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must filter`(): Unit = {
-      val ctx = new EffectfulActorContext("filter", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("filter", OpDSL[String] {
         for {
           self ← opProcessSelf
           if false
@@ -428,7 +429,7 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must filter across call`(): Unit = {
-      val ctx = new EffectfulActorContext("filter", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("filter", OpDSL[String] {
         val callee =
           for {
             self ← opProcessSelf
@@ -449,7 +450,7 @@ class ProcessSpec extends TypedSpec {
 
     def `must filter across call with replacement value`(): Unit = {
       var received: String = null
-      val ctx = new EffectfulActorContext("filter", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("filter", OpDSL[String] {
         val callee =
           for {
             self ← opProcessSelf
@@ -476,7 +477,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] {
         (for {
           _ ← opProcessSelf
           _ = call(0)
@@ -499,7 +500,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] {
         val callee =
           for {
             _ ← opProcessSelf
@@ -531,7 +532,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] {
         val callee =
           for {
             _ ← opProcessSelf
@@ -565,7 +566,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] {
         (for {
           _ ← opCleanup(() ⇒ call(0))
           _ ← opCleanup(() ⇒ call(1))
@@ -594,7 +595,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] {
         for {
           _ ← opFork(
             (for {
@@ -622,8 +623,7 @@ class ProcessSpec extends TypedSpec {
 
     def `must handle ephemeral state`(): Unit = {
       case class Add(num: Int)
-      object Key extends StateKey[Int] {
-        type Event = Add
+      object Key extends StateKey[Int, Add] {
         def initial = 0
         def apply(s: Int, ev: Add) = s + ev.num
         def clazz = classOf[Add]
@@ -632,9 +632,9 @@ class ProcessSpec extends TypedSpec {
       var values = List.empty[Int]
       def publish(n: Int): Unit = values ::= n
 
-      val ctx = new EffectfulActorContext("state", OpDSL[String] { implicit opDSL ⇒
+      val ctx = new EffectfulActorContext("state", OpDSL[String] {
         for {
-          i1 ← opUpdateState(Key)(i ⇒ { publish(i); List(Add(2)) → 5 })
+          i1 ← opUpdateState(Key)(i ⇒ { publish(i); List(Add(2)) -> 5 })
           _ = publish(i1)
           i2 ← opUpdateAndReadState(Key)(i ⇒ { publish(i); List(Add(2)) })
           _ = publish(i2)
