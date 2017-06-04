@@ -28,7 +28,7 @@ final case class Process[S, +Out, E <: Effects](
    * the current step. The current step’s computed value will be used as
    * input for the next computation.
    */
-  def flatMap[T, EE <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE]): Process[S, T, p.Out] =
+  def flatMap[T, EE <: Effects, EO <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE, EO]): Process[S, T, EO] =
     copy(operation = Impl.FlatMap(operation, f))
 
   /**
@@ -42,16 +42,16 @@ final case class Process[S, +Out, E <: Effects](
    * Without this flattening a final pointless `map` step would be added
    * for each iteration, eventually leading to an OutOfMemoryError.
    */
-  def map[T, Mapped, EOut <: Effects](f: Out ⇒ T)(
+  def map[T, Mapped, EOut <: Effects, EO <: Effects](f: Out ⇒ T)(
     implicit ev: MapAdapter[S, T, Mapped, EOut],
-    p: E.ops.Prepend[E, EOut]): Process[S, Mapped, p.Out] = flatMap(ev.lift(f))
+    p: E.ops.Prepend[E, EOut, EO]): Process[S, Mapped, EO] = flatMap(ev.lift(f))
 
   /**
    * Only continue this process if the given predicate is fulfilled, terminate
    * it otherwise.
    */
-  def filter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Process[S, Out, pr.Out] =
+  def filter[EO <: Effects](p: Out ⇒ Boolean)(
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil, EO]): Process[S, Out, EO] =
     flatMap(o ⇒
       ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
@@ -60,8 +60,8 @@ final case class Process[S, +Out, E <: Effects](
    * Only continue this process if the given predicate is fulfilled, terminate
    * it otherwise.
    */
-  def withFilter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Process[S, Out, pr.Out] =
+  def withFilter[EO <: Effects](p: Out ⇒ Boolean)(
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil, EO]): Process[S, Out, EO] =
     flatMap(o ⇒
       ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )

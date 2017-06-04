@@ -22,34 +22,28 @@ object E {
   object ops {
 
     @implicitNotFound("Cannot prepend ${First} to ${Second} (e.g. due to infinite loop in the first argument)")
-    sealed trait Prepend[First <: Effects, Second <: Effects] {
-      type Out <: Effects
-    }
-    type PrependAux[F <: Effects, S <: Effects, O <: Effects] = Prepend[F, S] { type Out = O }
+    sealed trait Prepend[First <: Effects, Second <: Effects, Out <: Effects]
 
     sealed trait PrependLowLow {
-      implicit def prepend[H <: Effect, T <: Effects, S <: Effects](
-        implicit ev: Prepend[T, S]): PrependAux[H :: T, S, H :: ev.Out] = null
+      implicit def prepend[H <: Effect, T <: Effects, S <: Effects, O <: Effects](
+        implicit ev: Prepend[T, S, O]): Prepend[H :: T, S, H :: O] = null
     }
     sealed trait PrependLow extends PrependLowLow {
-      implicit def prependNil[F <: HNil, S <: Effects]: PrependAux[F, S, S] = null
+      implicit def prependNil[F <: HNil, S <: Effects]: Prepend[F, S, S] = null
     }
     object Prepend extends PrependLow {
-      implicit def prependToNil[F <: Effects, S <: HNil]: PrependAux[F, S, F] = null
+      implicit def prependToNil[F <: Effects, S <: HNil]: Prepend[F, S, F] = null
     }
 
-    sealed trait Filter[E <: Effects, U] {
-      type Out <: Effects
-    }
-    type FilterAux[E <: Effects, U, O <: Effects] = Filter[E, U] { type Out = O }
+    sealed trait Filter[E <: Effects, U, Out <: Effects]
 
     sealed trait FilterLow {
-      implicit def notFound[H <: Effect, T <: Effects, U](implicit f: Filter[T, U], ev: NoSub[H, U]): FilterAux[H :: T, U, f.Out] = null
-      implicit def loop[E <: Effects, U](implicit f: Filter[E, U]): FilterAux[Loop[E], U, Loop[f.Out]] = null
+      implicit def notFound[H <: Effect, T <: Effects, U, O <: Effects](implicit f: Filter[T, U, O], ev: NoSub[H, U]): Filter[H :: T, U, O] = null
+      implicit def loop[E <: Effects, U, O <: Effects](implicit f: Filter[E, U, O]): Filter[Loop[E], U, Loop[O]] = null
     }
     object Filter extends FilterLow {
-      implicit def nil[U]: FilterAux[HNil, U, HNil] = null
-      implicit def found[H <: Effect, T <: Effects, U >: H](implicit f: Filter[T, U]): FilterAux[H :: T, U, H :: f.Out] = null
+      implicit def nil[U]: Filter[HNil, U, HNil] = null
+      implicit def found[H <: Effect, T <: Effects, U >: H, O <: Effects](implicit f: Filter[T, U, O]): Filter[H :: T, U, H :: O] = null
     }
 
     sealed trait NoSub[T, U]
@@ -63,7 +57,7 @@ object E {
   }
 
   def vetExternalProtocol[E <: Effects, F <: Effects](p: Protocol, op: Operation[_, _, E])(
-    implicit f: E.ops.FilterAux[E, ExternalEffect, F],
+    implicit f: E.ops.Filter[E, ExternalEffect, F],
     ev: F <:< p.Session): Unit = ()
 
   trait OpFunAux[OpFun, E <: Effects]

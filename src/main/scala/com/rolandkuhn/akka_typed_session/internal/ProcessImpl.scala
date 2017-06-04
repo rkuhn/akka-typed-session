@@ -97,7 +97,7 @@ private[akka_typed_session] class ProcessInterpreter[T](
   private var timeouts = emptyTimeouts
   private var timeoutTask = notScheduled
   private var watchMap = Map.empty[ActorRef[Nothing], Set[Impl.AbstractWatchRef]]
-  private var stateMap = Map.empty[StateKey[_], Any]
+  private var stateMap = Map.empty[StateKey[_, _], Any]
   private val mainProcess: Traversal[T] = new Traversal(initial, ctx)
 
   if (mainProcess.state == HasValue) triggerCompletions(ctx, mainProcess)
@@ -239,14 +239,14 @@ private[akka_typed_session] class ProcessInterpreter[T](
     }
   }
 
-  def getState[KT](key: StateKey[KT]): KT = {
+  def getState[KT](key: StateKey[KT, _]): KT = {
     stateMap.get(key) match {
       case None    ⇒ key.initial
       case Some(v) ⇒ v.asInstanceOf[KT]
     }
   }
 
-  def setState[KT](key: StateKey[KT], value: KT): Unit = {
+  def setState[KT](key: StateKey[KT, _], value: KT): Unit = {
     stateMap = stateMap.updated(key, value)
   }
 
@@ -359,7 +359,7 @@ private[akka_typed_session] class ProcessInterpreter[T](
       }
 
     private def triggerOn(t: Traversal[_]): t.type = {
-      internalTriggers += (t → this)
+      internalTriggers = internalTriggers.updated(t, this)
       t
     }
 
@@ -428,14 +428,14 @@ private[akka_typed_session] class ProcessInterpreter[T](
           case w: WatchRef[_] ⇒
             push(watch(ctx, w))
             valueOrTrampoline()
-          case state: State[s, k, ev, ex] ⇒
+          case state: State[s, ev, ex] ⇒
             val current = getState(state.key)
             val (events, read) = state.transform(current)
             val next = events.foldLeft(current)(state.key.apply(_, _))
             setState(state.key, next)
             push(read)
             valueOrTrampoline()
-          case state: StateR[s, k, ev] ⇒
+          case state: StateR[s, ev] ⇒
             val current = getState(state.key)
             val events = state.transform(current)
             val next = events.foldLeft(current)(state.key.apply(_, _))

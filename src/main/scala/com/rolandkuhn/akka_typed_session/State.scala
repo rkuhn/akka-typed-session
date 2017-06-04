@@ -10,8 +10,7 @@ package com.rolandkuhn.akka_typed_session
    * emitted. For persistent state data please refer to [[PersistentStateKey]]
    * and for ephemeral non-event-sourced data take a look at [[SimpleStateKey]].
    */
-  trait StateKey[T] {
-    type Event
+  trait StateKey[T, Event] {
     def apply(state: T, event: Event): T
     def initial: T
   }
@@ -43,8 +42,7 @@ package com.rolandkuhn.akka_typed_session
    * Beware that reference equality is used to identify this key: you should
    * create the key as a `val` inside a top-level `object`.
    */
-  final class SimpleStateKey[T](override val initial: T) extends StateKey[T] {
-    type Event = SetStateEvent[T]
+  final class SimpleStateKey[T](override val initial: T) extends StateKey[T, SetStateEvent[T]] {
     def apply(state: T, event: SetStateEvent[T]) = event.value
     override def toString: String = f"SimpleStateKey@$hashCode%08X($initial)"
   }

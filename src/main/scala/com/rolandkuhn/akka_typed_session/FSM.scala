@@ -112,17 +112,19 @@ object FSMsample extends FSMprotocol {
 
 object FSM {
   final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (
-      p: Protocol, state: State, op: Operation[Self, Out, HNil]) {
-    def andThen[Out2, E <: Effects, Next](f: (State, Out) => Operation[Self, Out2, E])(
-      implicit steps: p.MakeSteps[State, E, Next]) =
-      Step(p, steps(state), op.flatMap(x => f(state, x)).ignoreEffects)
-    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]) =
-      ???
+      p: Protocol, op: Operation[Self, Out, HNil]) {
+
+    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(
+      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =
+      Step(p, op.flatMap(f).ignoreEffects)
+    
+    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =
+      Step(p, op.flatMap(block(_, this).op))
   }
 
-  def apply[P <: FSMprotocol](protocol: P)(implicit opDSL: ScalaDSL.OpDSL) = {
-    val state = protocol.start
-    new Step(protocol, state, ScalaDSL.opUnit(state))
+  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {
+    val state = p.start
+    new Step(p, ScalaDSL.opUnit(state))
   }
 }
 
@@ -132,12 +134,26 @@ object Sample {
 
   object key extends ServiceKey[Login]
 
-  OpDSL[Login] { implicit opDSL =>
+  /*
+   * - register with receptionist
+   * - enter infinite loop of
+   *     - read Login
+   *     - send challenge
+   *     - read response
+   *     - if wrong, send new challenge, up to three times
+   *     - if correct, send access handle for query
+   *     - query session allows 3 queries
+   */
+  OpDSL[Login] {
     FSM(FSMsample)
-      .andThen((_, _) => opProcessSelf)
-      .andThen((_, self) => opCall(registerService(key, self).named("register")))
-      .andThen((_, _) => opRead)
-      .andThen((_, login) => opSend())
+      .andThen(_ => opProcessSelf)(FSMsample.makeNoSteps[FSMsample.Start])
+      .andThen(self => opCall(registerService(key, self).named("register")))
+      .andThen(_ => opRead)
+      .capturing((login, step) =>
+        step
+          .andThen(_ => opSend(login.client, Challenge()))
+          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type
+      )
       .op
   }
 

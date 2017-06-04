@@ -24,7 +24,7 @@ sealed trait Operation[S, +Out, E <: Effects] {
    * the current step. The current step’s computed value will be used as
    * input for the next computation.
    */
-  def flatMap[T, EE <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE]): Operation[S, T, p.Out] = Impl.FlatMap(this, f)
+  def flatMap[T, EE <: Effects, EO <: Effects](f: Out ⇒ Operation[S, T, EE])(implicit p: E.ops.Prepend[E, EE, EO]): Operation[S, T, EO] = Impl.FlatMap(this, f)
 
   /**
    * Map the value computed by this process step by the given function,
@@ -37,16 +37,16 @@ sealed trait Operation[S, +Out, E <: Effects] {
    * Without this flattening a final pointless `map` step would be added
    * for each iteration, eventually leading to an OutOfMemoryError.
    */
-  def map[T, Mapped, EOut <: Effects](f: Out ⇒ T)(
+  def map[T, Mapped, EOut <: Effects, EO <: Effects](f: Out ⇒ T)(
     implicit ev: MapAdapter[S, T, Mapped, EOut],
-    p: E.ops.Prepend[E, EOut]): Operation[S, Mapped, p.Out] = flatMap(ev.lift(f))
+    p: E.ops.Prepend[E, EOut, EO]): Operation[S, Mapped, EO] = flatMap(ev.lift(f))
 
   /**
    * Only continue this process if the given predicate is fulfilled, terminate
    * it otherwise.
    */
-  def filter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Operation[S, Out, pr.Out] =
+  def filter[EO <: Effects](p: Out ⇒ Boolean)(
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil, EO]): Operation[S, Out, EO] =
     flatMap(o ⇒
       ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
@@ -55,8 +55,8 @@ sealed trait Operation[S, +Out, E <: Effects] {
    * Only continue this process if the given predicate is fulfilled, terminate
    * it otherwise.
    */
-  def withFilter(p: Out ⇒ Boolean)(
-    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil]): Operation[S, Out, pr.Out] =
+  def withFilter[EO <: Effects](p: Out ⇒ Boolean)(
+    implicit pr: E.ops.Prepend[E, E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil, EO]): Operation[S, Out, EO] =
     flatMap(o ⇒
       ScalaDSL.opChoice(p(o), Impl.Return(o): Operation[S, Out, HNil]).orElse(Impl.ShortCircuit: Operation[S, Out, E.Halt :: HNil])
     )
@@ -95,8 +95,8 @@ object Impl {
     override def toString: String = s"FlatMap($first)"
   }
   case object ShortCircuit extends Operation[Nothing, Nothing, E.Halt :: HNil] {
-    override def flatMap[T, E <: Effects](f: Nothing ⇒ Operation[Nothing, T, E])(
-      implicit p: E.ops.Prepend[E.Halt :: HNil, E]): Operation[Nothing, T, p.Out] = this.asInstanceOf[Operation[Nothing, T, p.Out]]
+    override def flatMap[T, E <: Effects, EO <: Effects](f: Nothing ⇒ Operation[Nothing, T, E])(
+      implicit p: E.ops.Prepend[E.Halt :: HNil, E, EO]): Operation[Nothing, T, EO] = this.asInstanceOf[Operation[Nothing, T, EO]]
   }
 
   case object System extends Operation[Nothing, ActorSystem[Nothing], HNil]
@@ -118,8 +118,8 @@ object Impl {
   }
   //final case class Replay[T](key: StateKey[T]) extends Operation[Nothing, T]
   //final case class Snapshot[T](key: StateKey[T]) extends Operation[Nothing, T]
-  final case class State[S, T <: StateKey[S], Ev, Ex](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ (Seq[Ev], Ex)) extends Operation[Nothing, Ex, HNil]
-  final case class StateR[S, T <: StateKey[S], Ev](key: T { type Event = Ev }, afterUpdates: Boolean, transform: S ⇒ Seq[Ev]) extends Operation[Nothing, S, HNil]
-  final case class Forget[T](key: StateKey[T]) extends Operation[Nothing, akka.Done, HNil]
+  final case class State[S, Ev, Ex](key: StateKey[S, Ev], afterUpdates: Boolean, transform: S ⇒ (Seq[Ev], Ex)) extends Operation[Nothing, Ex, HNil]
+  final case class StateR[S, Ev](key: StateKey[S, Ev], afterUpdates: Boolean, transform: S ⇒ Seq[Ev]) extends Operation[Nothing, S, HNil]
+  final case class Forget(key: StateKey[_, _]) extends Operation[Nothing, akka.Done, HNil]
   final case class Cleanup(cleanup: () ⇒ Unit) extends Operation[Nothing, akka.Done, HNil]
 }

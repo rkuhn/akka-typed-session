@@ -50,9 +50,7 @@ object ScalaDSL {
    * }
    * }}}
    */
-  sealed trait OpDSL extends Any {
-    type Self
-  }
+  sealed trait OpDSL[Self] extends Any
 
   /**
    * This object offers different constructors that provide a scope within
@@ -101,13 +99,13 @@ object ScalaDSL {
    * }}}
    */
   object OpDSL {
-    private val _unit: Operation[Nothing, Null, HNil] = opUnit(null)(null: OpDSL { type Self = Nothing })
+    private val _unit: Operation[Nothing, Null, HNil] = opUnit(null)(null: OpDSL[Nothing])
     private def unit[S, Out]: Operation[S, Out, HNil] = _unit.asInstanceOf[Operation[S, Out, HNil]]
 
     def loopInf[S]: NextLoopInf[S] = nextLoopInf.asInstanceOf[NextLoopInf[S]]
     trait NextLoopInf[S] {
-      def apply[U, E <: Effects](body: OpDSL { type Self = S } ⇒ Operation[S, U, E]): Operation[S, Nothing, Loop[E]] = {
-        lazy val l: Operation[S, Nothing, E] = unit[S, OpDSL { type Self = S }].flatMap(body).withEffects[HNil].flatMap(_ ⇒ l)
+      def apply[U, E <: Effects](body: implicit OpDSL[S] ⇒ Operation[S, U, E]): Operation[S, Nothing, Loop[E]] = {
+        lazy val l: Operation[S, Nothing, E] = unit[S, OpDSL[S]].flatMap(body).withEffects[HNil].flatMap(_ ⇒ l)
         l.withEffects[Loop[E]]
       }
     }
@@ -115,14 +113,14 @@ object ScalaDSL {
 
     def apply[T]: Next[T] = next.asInstanceOf[Next[T]]
     trait Next[T] {
-      def apply[U, E <: Effects](body: OpDSL { type Self = T } ⇒ Operation[T, U, E]): Operation[T, U, E] =
-        unit[T, OpDSL { type Self = T }].flatMap(body)
+      def apply[U, E <: Effects](body: implicit OpDSL[T] ⇒ Operation[T, U, E]): Operation[T, U, E] =
+        unit[T, OpDSL[T]].flatMap(body)
     }
     private object next extends Next[Nothing]
 
     trait NextStep[T] {
-      def apply[U, E <: Effects](mailboxCapacity: Int, body: OpDSL { type Self = T } ⇒ Operation[T, U, E])(
-        implicit opDSL: OpDSL): Operation[opDSL.Self, U, E] =
+      def apply[U, E <: Effects, TO](mailboxCapacity: Int, body: OpDSL[T] ⇒ Operation[T, U, E])(
+        implicit opDSL: OpDSL[TO]): Operation[TO, U, E] =
         Impl.Call(Process("nextStep", Duration.Inf, mailboxCapacity, body(null)), None)
     }
     object nextStep extends NextStep[Nothing]
@@ -135,33 +133,33 @@ object ScalaDSL {
   /**
    * Obtain a reference to the ActorSystem in which this process is running.
    */
-  def opSystem(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorSystem[Nothing], HNil] = Impl.System
+  def opSystem[S](implicit opDSL: OpDSL[S]): Operation[S, ActorSystem[Nothing], HNil] = Impl.System
 
   /**
    * Read a message from this process’ input channel.
    */
-  def opRead(implicit opDSL: OpDSL): Operation[opDSL.Self, opDSL.Self, E.Read[opDSL.Self] :: HNil] = Impl.Read
+  def opRead[S](implicit opDSL: OpDSL[S]): Operation[S, S, E.Read[S] :: HNil] = Impl.Read
 
   /**
    * Send a message to the given target actor.
    */
-  def opSend[T](target: ActorRef[T], msg: T)(implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, E.Send[T] :: HNil] =
+  def opSend[T, S](target: ActorRef[T], msg: T)(implicit opDSL: OpDSL[S]): Operation[S, a.Cancellable, E.Send[T] :: HNil] =
     opSchedule(Duration.Zero, target, msg)
 
   /**
    * Obtain this process’ [[ActorRef]], not to be confused with the ActorRef of the Actor this process is running in.
    */
-  def opProcessSelf(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[opDSL.Self], HNil] = Impl.ProcessSelf
+  def opProcessSelf[S](implicit opDSL: OpDSL[S]): Operation[S, ActorRef[S], HNil] = Impl.ProcessSelf
 
   /**
    * Obtain the [[ActorRef]] of the Actor this process is running in.
    */
-  def opActorSelf(implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[ActorCmd[Nothing]], HNil] = Impl.ActorSelf
+  def opActorSelf[S](implicit opDSL: OpDSL[S]): Operation[S, ActorRef[ActorCmd[Nothing]], HNil] = Impl.ActorSelf
 
   /**
    * Lift a plain value into a process that returns that value.
    */
-  def opUnit[U](value: U)(implicit opDSL: OpDSL): Operation[opDSL.Self, U, HNil] = Impl.Return(value)
+  def opUnit[U, S](value: U)(implicit opDSL: OpDSL[S]): Operation[S, U, HNil] = Impl.Return(value)
 
   /**
    * Start a list of choices. The effects of the choices are accumulated in
@@ -209,8 +207,8 @@ object ScalaDSL {
    * If the process does not return a result (due to a non-matching `filter` expression), the
    * replacement value is used if the provided Option contains a value.
    */
-  def opCall[Self, Out, E <: Effects](process: Process[Self, Out, E], replacement: Option[Out] = None)(
-    implicit opDSL: OpDSL): Operation[opDSL.Self, Out, E] =
+  def opCall[Self, Out, E <: Effects, S](process: Process[Self, Out, E], replacement: Option[Out] = None)(
+    implicit opDSL: OpDSL[S]): Operation[S, Out, E] =
     Impl.Call(process, replacement)
 
   /**
@@ -230,7 +228,7 @@ object ScalaDSL {
    * current process to communicate results. The returned [[SubActor]] reference
    * can be used to send messages to the forked process or to cancel it.
    */
-  def opFork[Self, E <: Effects](process: Process[Self, Any, E])(implicit opDSL: OpDSL): Operation[opDSL.Self, SubActor[Self], E.Fork[E] :: HNil] =
+  def opFork[Self, E <: Effects, S](process: Process[Self, Any, E])(implicit opDSL: OpDSL[S]): Operation[S, SubActor[Self], E.Fork[E] :: HNil] =
     Impl.Fork(process)
 
   /**
@@ -245,14 +243,14 @@ object ScalaDSL {
    * between the processes hosted by that Actor and timeouts also go through
    * this mailbox.
    */
-  def opSpawn[Self, E <: Effects](process: Process[Self, Any, E], deployment: Props = Props.empty)(
-    implicit opDSL: OpDSL): Operation[opDSL.Self, ActorRef[ActorCmd[Self]], E.Spawn[E] :: HNil] =
+  def opSpawn[Self, E <: Effects, S](process: Process[Self, Any, E], deployment: Props = Props.empty)(
+    implicit opDSL: OpDSL[S]): Operation[S, ActorRef[ActorCmd[Self]], E.Spawn[E] :: HNil] =
     Impl.Spawn(process, deployment)
 
   /**
    * Schedule a message to be sent after the given delay has elapsed.
    */
-  def opSchedule[T](delay: FiniteDuration, target: ActorRef[T], msg: T)(implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, E.Send[T] :: HNil] =
+  def opSchedule[T, S](delay: FiniteDuration, target: ActorRef[T], msg: T)(implicit opDSL: OpDSL[S]): Operation[S, a.Cancellable, E.Send[T] :: HNil] =
     Impl.Schedule(delay, msg, target)
 
   /**
@@ -264,12 +262,12 @@ object ScalaDSL {
    * If `onFailure` is provided it can override the value to be sent if the
    * watched Actor failed and was a child Actor of the Actor hosting this process.
    */
-  def opWatch[T](watchee: ActorRef[Nothing], target: ActorRef[T], msg: T, onFailure: Throwable ⇒ Option[T] = any2none)(
-    implicit opDSL: OpDSL): Operation[opDSL.Self, a.Cancellable, HNil] =
+  def opWatch[T, S](watchee: ActorRef[Nothing], target: ActorRef[T], msg: T, onFailure: Throwable ⇒ Option[T] = any2none)(
+    implicit opDSL: OpDSL[S]): Operation[S, a.Cancellable, HNil] =
     Impl.WatchRef(watchee, target, msg, onFailure)
 
   val any2none = (_: Any) ⇒ None
-  private val _any2Nil = (state: Any) ⇒ Nil → state
+  private val _any2Nil = (state: Any) ⇒ Nil -> state
   private def any2Nil[T] = _any2Nil.asInstanceOf[T ⇒ (Nil.type, T)]
 
   /**
@@ -277,8 +275,8 @@ object ScalaDSL {
    * until after all outstanding updates for the key have been completed if
    * `afterUpdates` is `true`.
    */
-  def opReadState[T](key: StateKey[T], afterUpdates: Boolean = true)(implicit opDSL: OpDSL): Operation[opDSL.Self, T, HNil] =
-    Impl.State[T, StateKey[T], key.Event, T](key, afterUpdates, any2Nil)
+  def opReadState[T, Ev, S](key: StateKey[T, Ev], afterUpdates: Boolean = true)(implicit opDSL: OpDSL[S]): Operation[S, T, HNil] =
+    Impl.State[T, Ev, T](key, afterUpdates, any2Nil)
 
   /**
    * Update the state stored for the given [[StateKey]] by emitting events that
@@ -289,8 +287,8 @@ object ScalaDSL {
    * results from having applied the emitted events then please see
    * [[ScalaProcess#opUpdateAndReadState]].
    */
-  def opUpdateState[T, Ev, Ex](key: StateKey[T] { type Event = Ev }, afterUpdates: Boolean = true)(
-    transform: T ⇒ (Seq[Ev], Ex))(implicit opDSL: OpDSL): Operation[opDSL.Self, Ex, HNil] =
+  def opUpdateState[T, Ev, Ex, S](key: StateKey[T, Ev], afterUpdates: Boolean = true)(
+    transform: T ⇒ (Seq[Ev], Ex))(implicit opDSL: OpDSL[S]): Operation[S, Ex, HNil] =
     Impl.State(key, afterUpdates, transform)
 
   /**
@@ -298,8 +296,8 @@ object ScalaDSL {
    * process is suspended until after all outstanding updates for the key have been
    * completed if `afterUpdates` is `true`.
    */
-  def opUpdateAndReadState[T, Ev](key: StateKey[T] { type Event = Ev }, afterUpdates: Boolean = true)(
-    transform: T ⇒ Seq[Ev])(implicit opDSL: OpDSL): Operation[opDSL.Self, T, HNil] =
+  def opUpdateAndReadState[T, Ev, S](key: StateKey[T, Ev], afterUpdates: Boolean = true)(
+    transform: T ⇒ Seq[Ev])(implicit opDSL: OpDSL[S]): Operation[S, T, HNil] =
     Impl.StateR(key, afterUpdates, transform)
 
   /**
@@ -309,7 +307,7 @@ object ScalaDSL {
    * all currently outstanding updates for this key have been completed,
    * suspending this process until done.
    */
-  //def opTakeSnapshot[T](key: PersistentStateKey[T])(implicit opDSL: OpDSL): Operation[opDSL.Self, T] =
+  //def opTakeSnapshot[T](key: PersistentStateKey[T])(implicit opDSL: OpDSL): Operation[S, T] =
   //  Snapshot(key)
 
   /**
@@ -320,14 +318,14 @@ object ScalaDSL {
    * otherwise events are replayed from the beginning of the event log, starting
    * with the given initial data as the state before the first event is applied.
    */
-  //def opReplayPersistentState[T](key: PersistentStateKey[T])(implicit opDSL: OpDSL): Operation[opDSL.Self, T] =
+  //def opReplayPersistentState[T](key: PersistentStateKey[T])(implicit opDSL: OpDSL): Operation[S, T] =
   //  Replay(key)
 
   /**
    * Remove the given [[StateKey]] from this Actor’s storage. The slot can be
    * filled again using `updateState` or `replayPersistentState`.
    */
-  def opForgetState[T](key: StateKey[T])(implicit opDSL: OpDSL): Operation[opDSL.Self, akka.Done, HNil] =
+  def opForgetState[T, Ev, S](key: StateKey[T, Ev])(implicit opDSL: OpDSL[S]): Operation[S, akka.Done, HNil] =
     Impl.Forget(key)
 
   /**
@@ -365,7 +363,7 @@ object ScalaDSL {
    * .flatMap { ... }
    * }}}
    */
-  def opCleanup(cleanup: () ⇒ Unit)(implicit opDSL: OpDSL): Operation[opDSL.Self, akka.Done, HNil] =
+  def opCleanup[S](cleanup: () ⇒ Unit)(implicit opDSL: OpDSL[S]): Operation[S, akka.Done, HNil] =
     Impl.Cleanup(cleanup)
 
   /**
@@ -374,7 +372,7 @@ object ScalaDSL {
    * determines whether the calling process continues or halts as well: if no
    * replacement is given, processing cannot go on.
    */
-  def opHalt(implicit opDSL: OpDSL): Operation[opDSL.Self, Nothing, E.Halt :: HNil] = Impl.ShortCircuit
+  def opHalt[S](implicit opDSL: OpDSL[S]): Operation[S, Nothing, E.Halt :: HNil] = Impl.ShortCircuit
 
   // FIXME opChildList
   // FIXME opProcessList
@@ -404,8 +402,8 @@ object ScalaDSL {
    * Fork the given process, but also fork another process that will cancel the
    * first process after the given timeout.
    */
-  def forkAndCancel[T, E <: Effects](timeout: FiniteDuration, process: Process[T, Any, E])(
-    implicit opDSL: OpDSL): Operation[opDSL.Self, SubActor[T], E.Fork[E] :: E.Fork[E.Send[Boolean] :: E.Read[Boolean] :: E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil] :: HNil] = {
+  def forkAndCancel[T, E <: Effects, S](timeout: FiniteDuration, process: Process[T, Any, E])(
+    implicit opDSL: OpDSL[S]): Operation[S, SubActor[T], E.Fork[E] :: E.Fork[E.Send[Boolean] :: E.Read[Boolean] :: E.Choice[(E.Halt :: HNil) :+: HNil :+: CNil] :: HNil] :: HNil] = {
     def guard(sub: SubActor[T]) = OpDSL[Boolean] { implicit opDSL ⇒
       for {
         self ← opProcessSelf
@@ -431,7 +429,7 @@ object ScalaDSL {
   def firstOf[T](processes: Process[_, T, _ <: Effects]*): Operation[T, T, HNil] = {
     def forkAll(self: ActorRef[T], index: Int = 0,
                 p: List[Process[_, T, _ <: Effects]] = processes.toList,
-                acc: List[SubActor[Nothing]] = Nil)(implicit opDSL: OpDSL { type Self = T }): Operation[T, List[SubActor[Nothing]], HNil] =
+                acc: List[SubActor[Nothing]] = Nil)(implicit opDSL: OpDSL[T]): Operation[T, List[SubActor[Nothing]], HNil] =
       p match {
         case Nil ⇒ opUnit(acc)
         case x :: xs ⇒
@@ -458,7 +456,7 @@ object ScalaDSL {
    *
    * FIXME effects need more thought
    */
-  def retry[S, T, E <: Effects](timeout: FiniteDuration, retries: Int, ops: Process[S, T, E])(implicit opDSL: OpDSL): Operation[opDSL.Self, T, E] = {
+  def retry[Self, T, E <: Effects, S](timeout: FiniteDuration, retries: Int, ops: Process[Self, T, E])(implicit opDSL: OpDSL[S]): Operation[S, T, E] = {
     opCall(firstOf(ops.map(Some(_)), delay(timeout, None).named("retryTimeout")).named("firstOf"))
       .flatMap {
         case Some(res)           ⇒ opUnit(res).withEffects[E]
