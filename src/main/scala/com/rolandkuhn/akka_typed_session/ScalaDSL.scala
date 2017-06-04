@@ -102,28 +102,28 @@ object ScalaDSL {
     private val _unit: Operation[Nothing, Null, HNil] = opUnit(null)(null: OpDSL[Nothing])
     private def unit[S, Out]: Operation[S, Out, HNil] = _unit.asInstanceOf[Operation[S, Out, HNil]]
 
-    def loopInf[S]: NextLoopInf[S] = nextLoopInf.asInstanceOf[NextLoopInf[S]]
+    def loopInf[S]: NextLoopInf[S] = _nextLoopInf.asInstanceOf[NextLoopInf[S]]
     trait NextLoopInf[S] {
       def apply[U, E <: Effects](body: implicit OpDSL[S] ⇒ Operation[S, U, E]): Operation[S, Nothing, Loop[E]] = {
         lazy val l: Operation[S, Nothing, E] = unit[S, OpDSL[S]].flatMap(body).withEffects[HNil].flatMap(_ ⇒ l)
         l.withEffects[Loop[E]]
       }
     }
-    private object nextLoopInf extends NextLoopInf[Nothing]
+    private object _nextLoopInf extends NextLoopInf[Nothing]
 
-    def apply[T]: Next[T] = next.asInstanceOf[Next[T]]
+    def apply[T]: Next[T] = _next.asInstanceOf[Next[T]]
     trait Next[T] {
       def apply[U, E <: Effects](body: implicit OpDSL[T] ⇒ Operation[T, U, E]): Operation[T, U, E] =
         unit[T, OpDSL[T]].flatMap(body)
     }
-    private object next extends Next[Nothing]
+    private object _next extends Next[Nothing]
 
     trait NextStep[T] {
       def apply[U, E <: Effects, TO](mailboxCapacity: Int, body: implicit OpDSL[T] ⇒ Operation[T, U, E])(
         implicit opDSL: OpDSL[TO]): Operation[TO, U, E] =
         Impl.Call(Process("nextStep", Duration.Inf, mailboxCapacity, body(null)), None)
     }
-    object nextStep extends NextStep[Nothing]
+    object _nextStep extends NextStep[Nothing]
   }
 
   /*
@@ -219,7 +219,7 @@ object ScalaDSL {
    * please use `opCall` directly.
    */
   def opNextStep[T]: OpDSL.NextStep[T] =
-    OpDSL.nextStep.asInstanceOf[OpDSL.NextStep[T]]
+    OpDSL._nextStep.asInstanceOf[OpDSL.NextStep[T]]
 
   /**
    * Execute the given process within the current Actor, concurrently with the

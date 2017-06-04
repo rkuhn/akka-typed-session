@@ -9,22 +9,50 @@ import akka.typed.ActorRef
 object FSMprotocol {
   sealed abstract class Nat extends Product with Serializable {
     def N: Int
+    override def toString = s"Nat($N)"
   }
   sealed abstract class _0 extends Nat
-  case object _0 extends _0 {
+  private case object N extends _0 {
     val N = 0
   }
   case class S[P <: Nat](p: P) extends Nat {
     lazy val N = p.N + 1
   }
 
-  val _1 = S(_0); type _1 = _1.type
-  val _2 = S(_1); type _2 = _2.type
-  val _3 = S(_2); type _3 = _3.type
-  val _4 = S(_3); type _4 = _4.type
-  val _5 = S(_4); type _5 = _5.type
-  val _6 = S(_5); type _6 = _6.type
-  val _7 = S(_6); type _7 = _7.type
+  val _0: _0 = N
+  type  _1 = S[_0]; val  _1:  _1 = S(_0);  
+  type  _2 = S[_1]; val  _2:  _2 = S(_1);  
+  type  _3 = S[_2]; val  _3:  _3 = S(_2);  
+  type  _4 = S[_3]; val  _4:  _4 = S(_3);  
+  type  _5 = S[_4]; val  _5:  _5 = S(_4);  
+  type  _6 = S[_5]; val  _6:  _6 = S(_5);  
+  type  _7 = S[_6]; val  _7:  _7 = S(_6);  
+  type  _8 = S[_7]; val  _8:  _8 = S(_7);  
+  type  _9 = S[_8]; val  _9:  _9 = S(_8);  
+  type _10 = S[_9]; val _10: _10 = S(_9); 
+
+  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)
+  implicit class toDigit[N <: Nat](n: N) extends AnyVal {
+    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =
+      e2(e1(n), m)
+  }
+  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(
+    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =
+    e2(e1(in.ten), in.one)
+
+  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)
+  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero
+  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =
+    (sn) => e2(e1(sn.p), _10)
+  
+  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)
+  object Add extends AddLow {
+    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x
+  }
+  trait AddLow {
+    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =
+      (x, y) => S(e(x, y.p))
+  }
 }
 
 trait FSMprotocol {
@@ -128,9 +156,10 @@ object FSM {
   }
 }
 
-object Sample {
+object Sample extends App {
   import ScalaDSL._
   import FSMsample._
+  import FSMprotocol._
 
   object key extends ServiceKey[Login]
 
@@ -157,4 +186,11 @@ object Sample {
       .op
   }
 
+  val x = _1 ~ _0
+  val y: _10 = x
+  val x1 = _1 ~ _2
+  val y1: S[S[_10]] = x1
+  val _123 = _1 ~ _2 ~ _3
+  println(_123)
+  println(_123.N)
 }
