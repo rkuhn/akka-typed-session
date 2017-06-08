@@ -175,7 +175,7 @@ object Sample extends App {
    */
   OpDSL[Login] {
     FSM(FSMsample)
-      .andThen(_ => opProcessSelf)(FSMsample.makeNoSteps[FSMsample.Start])
+      .andThen(_ => opProcessSelf)
       .andThen(self => opCall(registerService(key, self).named("register")))
       .andThen(_ => opRead)
       .capturing((login, step) =>

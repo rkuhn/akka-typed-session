@@ -1,7 +1,7 @@
 name := "akka-typed-session"
 version := "0.1.0-SNAPSHOT"
 organization := "com.rolandkuhn"
-scalaVersion := "0.1.2-RC1"
+scalaVersion := "0.2.0-bin-20170608-0c11376-NIGHTLY"
 
 scalacOptions += "-deprecation"
 logBuffered in Test := false
