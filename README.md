@@ -80,13 +80,13 @@ of sending and receiving messages match the protocol definition given above by a
 
 ~~~scala
 def vetProtocol[E <: Effects, F <: Effects](p: Protocol, op: Operation[_, _, E])(
-  implicit f: E.ops.FilterAux[E, SessionEffect, F], ev: F <:< p.Session): Unit = ()
+  implicit f: E.ops.FilterAux[E, ExternalEffect, F], ev: F <:< p.Session): Unit = ()
 
 vetProtocol(MyProto, p)
 ~~~
 
 This works in two steps: first the list of effects E (which is somewhat like an HList with a special node for infinite loops)
-is filtered so that only effects remain that are subtypes of `SessionEffect`, yielding the list F. Then this list is compared
+is filtered so that only effects remain that are subtypes of `ExternalEffect`, yielding the list F. Then this list is compared
 to the `Session` type member of the given protocol to see whether it is a subtype.
 
 The result is that the whole program only compiles if the process performs all the required externally visible effects in
