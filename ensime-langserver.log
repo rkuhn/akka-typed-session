@@ -1,0 +1,523 @@
+[2017-12-15 16:28:28,546] INFO org.github.dragos.vscode.Main$ - Starting server in /Users/rkuhn/comp/akka-typed-session
+[2017-12-15 16:28:28,546] INFO org.github.dragos.vscode.Main$ - Starting server in /Users/rkuhn/comp/akka-typed-session
+[2017-12-15 16:28:28,553] INFO org.github.dragos.vscode.Main$ - Classpath: /Users/rkuhn/.vscode/extensions/dragos.scala-lsp-0.2.2/coursier
+[2017-12-15 16:28:28,553] INFO org.github.dragos.vscode.Main$ - Classpath: /Users/rkuhn/.vscode/extensions/dragos.scala-lsp-0.2.2/coursier
+[2017-12-15 16:28:28,705] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 1200
+[2017-12-15 16:28:28,705] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 1200
+[2017-12-15 16:28:28,720] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":0,"method":"initialize","params":{"processId":6081,"rootPath":"/Users/rkuhn/comp/akka-typed-session","rootUri":"file:///Users/rkuhn/comp/akka-typed-session","capabilities":{"workspace":{"applyEdit":true,"didChangeConfiguration":{"dynamicRegistration":false},"didChangeWatchedFiles":{"dynamicRegistration":false},"symbol":{"dynamicRegistration":true},"executeCommand":{"dynamicRegistration":true}},"textDocument":{"synchronization":{"dynamicRegistration":true,"willSave":true,"willSaveWaitUntil":true,"didSave":true},"completion":{"dynamicRegistration":true,"completionItem":{"snippetSupport":true}},"hover":{"dynamicRegistration":true},"signatureHelp":{"dynamicRegistration":true},"references":{"dynamicRegistration":true},"documentHighlight":{"dynamicRegistration":true},"documentSymbol":{"dynamicRegistration":true},"formatting":{"dynamicRegistration":true},"rangeFormatting":{"dynamicRegistration":true},"onTypeFormatting":{"dynamicRegistration":true},"definition":{"dynamicRegistration":true},"codeAction":{"dynamicRegistration":true},"codeLens":{"dynamicRegistration":true},"documentLink":{"dynamicRegistration":true},"rename":{"dynamicRegistration":true}}},"trace":"off"}}
+[2017-12-15 16:28:28,720] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":0,"method":"initialize","params":{"processId":6081,"rootPath":"/Users/rkuhn/comp/akka-typed-session","rootUri":"file:///Users/rkuhn/comp/akka-typed-session","capabilities":{"workspace":{"applyEdit":true,"didChangeConfiguration":{"dynamicRegistration":false},"didChangeWatchedFiles":{"dynamicRegistration":false},"symbol":{"dynamicRegistration":true},"executeCommand":{"dynamicRegistration":true}},"textDocument":{"synchronization":{"dynamicRegistration":true,"willSave":true,"willSaveWaitUntil":true,"didSave":true},"completion":{"dynamicRegistration":true,"completionItem":{"snippetSupport":true}},"hover":{"dynamicRegistration":true},"signatureHelp":{"dynamicRegistration":true},"references":{"dynamicRegistration":true},"documentHighlight":{"dynamicRegistration":true},"documentSymbol":{"dynamicRegistration":true},"formatting":{"dynamicRegistration":true},"rangeFormatting":{"dynamicRegistration":true},"onTypeFormatting":{"dynamicRegistration":true},"definition":{"dynamicRegistration":true},"codeAction":{"dynamicRegistration":true},"codeLens":{"dynamicRegistration":true},"documentLink":{"dynamicRegistration":true},"rename":{"dynamicRegistration":true}}},"trace":"off"}}
+[2017-12-15 16:28:29,383] INFO org.github.dragos.vscode.EnsimeLanguageServer - Initialized with 6081, /Users/rkuhn/comp/akka-typed-session, ClientCapabilities()
+[2017-12-15 16:28:29,383] INFO org.github.dragos.vscode.EnsimeLanguageServer - Initialized with 6081, /Users/rkuhn/comp/akka-typed-session, ClientCapabilities()
+[2017-12-15 16:28:29,384] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - ensime.config = "/Users/rkuhn/comp/akka-typed-session/.ensime" 
+[2017-12-15 16:28:29,384] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - ensime.config = "/Users/rkuhn/comp/akka-typed-session/.ensime" 
+[2017-12-15 16:28:29,786] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+[2017-12-15 16:28:29,881] ERROR org.github.dragos.vscode.EnsimeLanguageServer - initializeEnsime Error: /Users/rkuhn/comp/akka-typed-session/.ensime
+[2017-12-15 16:28:29,881] ERROR org.github.dragos.vscode.EnsimeLanguageServer - initializeEnsime Error: /Users/rkuhn/comp/akka-typed-session/.ensime
+[2017-12-15 16:28:29,927] DEBUG langserver.core.MessageWriter - Content-Length: 146
+
+
+
+{"jsonrpc":"2.0","method":"window/showMessage","params":{"tpe":1,"message":"No .ensime file in directory. Run `sbt ensimeConfig` to create one."}}
+[2017-12-15 16:28:29,927] DEBUG langserver.core.MessageWriter - Content-Length: 146
+
+
+
+{"jsonrpc":"2.0","method":"window/showMessage","params":{"tpe":1,"message":"No .ensime file in directory. Run `sbt ensimeConfig` to create one."}}
+[2017-12-15 16:28:29,927] DEBUG langserver.core.MessageWriter - payload: {"jsonrpc":"2.0","method":"window/showMessage","params":{"tpe":1,"message":"No .ensime file in directory. Run `sbt ensimeConfig` to create one."}}
+[2017-12-15 16:28:29,927] DEBUG langserver.core.MessageWriter - payload: {"jsonrpc":"2.0","method":"window/showMessage","params":{"tpe":1,"message":"No .ensime file in directory. Run `sbt ensimeConfig` to create one."}}
+[2017-12-15 16:28:29,988] DEBUG langserver.core.MessageWriter - Content-Length: 441
+
+
+
+{"jsonrpc":"2.0","result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"completionProvider":{"resolveProvider":false,"triggerCharacters":["."]},"definitionProvider":true,"referencesProvider":false,"documentHighlightProvider":false,"documentSymbolProvider":true,"workspaceSymbolProvider":false,"codeActionProvider":false,"documentFormattingProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false}},"id":0}
+[2017-12-15 16:28:29,988] DEBUG langserver.core.MessageWriter - Content-Length: 441
+
+
+
+{"jsonrpc":"2.0","result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"completionProvider":{"resolveProvider":false,"triggerCharacters":["."]},"definitionProvider":true,"referencesProvider":false,"documentHighlightProvider":false,"documentSymbolProvider":true,"workspaceSymbolProvider":false,"codeActionProvider":false,"documentFormattingProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false}},"id":0}
+[2017-12-15 16:28:29,989] DEBUG langserver.core.MessageWriter - payload: {"jsonrpc":"2.0","result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"completionProvider":{"resolveProvider":false,"triggerCharacters":["."]},"definitionProvider":true,"referencesProvider":false,"documentHighlightProvider":false,"documentSymbolProvider":true,"workspaceSymbolProvider":false,"codeActionProvider":false,"documentFormattingProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false}},"id":0}
+[2017-12-15 16:28:29,989] DEBUG langserver.core.MessageWriter - payload: {"jsonrpc":"2.0","result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"completionProvider":{"resolveProvider":false,"triggerCharacters":["."]},"definitionProvider":true,"referencesProvider":false,"documentHighlightProvider":false,"documentSymbolProvider":true,"workspaceSymbolProvider":false,"codeActionProvider":false,"documentFormattingProvider":false,"documentRangeFormattingProvider":false,"renameProvider":false}},"id":0}
+[2017-12-15 16:28:29,990] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 52
+[2017-12-15 16:28:29,990] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 52
+[2017-12-15 16:28:29,991] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"initialized","params":{}}
+[2017-12-15 16:28:29,991] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"initialized","params":{}}
+[2017-12-15 16:28:30,001] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification Initialized()
+[2017-12-15 16:28:30,001] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification Initialized()
+[2017-12-15 16:28:30,002] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7407
+[2017-12-15 16:28:30,002] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7407
+[2017-12-15 16:28:30,006] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","languageId":"scala","version":17,"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}}}
+[2017-12-15 16:28:30,006] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","languageId":"scala","version":17,"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}}}
+[2017-12-15 16:29:35,254] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 231
+[2017-12-15 16:29:35,254] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 231
+[2017-12-15 16:29:35,255] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":168,"character":4}}}
+[2017-12-15 16:29:35,255] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":1,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":168,"character":4}}}
+[2017-12-15 16:29:35,258] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (168, 4).
+[2017-12-15 16:29:35,258] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (168, 4).
+[2017-12-15 16:29:35,270] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 16:29:35,270] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 16:29:35,798] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 16:29:35,798] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 16:29:35,799] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":1}}
+[2017-12-15 16:29:35,799] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":1}}
+[2017-12-15 16:29:35,801] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(1)
+[2017-12-15 16:29:35,801] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(1)
+[2017-12-15 16:29:40,785] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 16:29:40,785] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 16:29:40,785] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":2,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":160,"character":20}}}
+[2017-12-15 16:29:40,785] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":2,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":160,"character":20}}}
+[2017-12-15 16:29:40,786] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (160, 20).
+[2017-12-15 16:29:40,786] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (160, 20).
+[2017-12-15 16:29:40,788] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 16:29:40,788] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 16:29:41,021] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 16:29:41,021] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 16:29:41,021] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":2}}
+[2017-12-15 16:29:41,021] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":2}}
+[2017-12-15 16:29:41,024] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(2)
+[2017-12-15 16:29:41,024] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(2)
+[2017-12-15 16:29:51,648] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7411
+[2017-12-15 16:29:51,648] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7411
+[2017-12-15 16:29:51,652] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":18},"contentChanges":[{"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}]}}
+[2017-12-15 16:29:51,652] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":18},"contentChanges":[{"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}]}}
+[2017-12-15 16:29:51,659] ERROR langserver.core.Connection - failed notification handler
+java.lang.NullPointerException: null
+	at org.github.dragos.vscode.EnsimeLanguageServer.onChangeTextDocument(EnsimeLanguageServer.scala:167)
+	at langserver.core.LanguageServer.$anonfun$new$1(LanguageServer.scala:42)
+	at langserver.core.LanguageServer.$anonfun$new$1$adapted(LanguageServer.scala:40)
+	at langserver.core.Connection.$anonfun$notifySubscribers$2(Connection.scala:42)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+	at scala.util.Try$.apply(Try.scala:209)
+	at langserver.core.Connection.$anonfun$notifySubscribers$1(Connection.scala:42)
+	at scala.collection.immutable.List.foreach(List.scala:389)
+	at scala.collection.generic.TraversableForwarder.foreach(TraversableForwarder.scala:35)
+	at scala.collection.generic.TraversableForwarder.foreach$(TraversableForwarder.scala:35)
+	at scala.collection.mutable.ListBuffer.foreach(ListBuffer.scala:44)
+	at langserver.core.Connection.notifySubscribers(Connection.scala:41)
+	at langserver.core.Connection.$anonfun$start$4(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$4$adapted(Connection.scala:99)
+	at play.api.libs.json.JsSuccess.fold(JsResult.scala:15)
+	at langserver.core.Connection.$anonfun$start$2(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$2$adapted(Connection.scala:97)
+	at scala.Option.fold(Option.scala:158)
+	at langserver.core.Connection.start(Connection.scala:97)
+	at langserver.core.LanguageServer.start(LanguageServer.scala:50)
+	at org.github.dragos.vscode.EnsimeLanguageServer.start(EnsimeLanguageServer.scala:51)
+	at org.github.dragos.vscode.Main$.main(Main.scala:23)
+	at org.github.dragos.vscode.Main.main(Main.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.cli.qn.a(Unknown Source)
+	at coursier.cli.qm.i(Unknown Source)
+	at coursier.cli.qs.a(Unknown Source)
+	at c.g.a.c(Unknown Source)
+	at a.b.d_(Unknown Source)
+	at c.b.d.E.g(Unknown Source)
+	at c.b.e.aU.g(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.qm.b(Unknown Source)
+	at coursier.cli.M.b(Unknown Source)
+	at a.J.d_(Unknown Source)
+	at c.E.h(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.Coursier.main(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.Bootstrap.main(Bootstrap.java:412)
+[2017-12-15 16:29:51,659] ERROR langserver.core.Connection - failed notification handler
+java.lang.NullPointerException: null
+	at org.github.dragos.vscode.EnsimeLanguageServer.onChangeTextDocument(EnsimeLanguageServer.scala:167)
+	at langserver.core.LanguageServer.$anonfun$new$1(LanguageServer.scala:42)
+	at langserver.core.LanguageServer.$anonfun$new$1$adapted(LanguageServer.scala:40)
+	at langserver.core.Connection.$anonfun$notifySubscribers$2(Connection.scala:42)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+	at scala.util.Try$.apply(Try.scala:209)
+	at langserver.core.Connection.$anonfun$notifySubscribers$1(Connection.scala:42)
+	at scala.collection.immutable.List.foreach(List.scala:389)
+	at scala.collection.generic.TraversableForwarder.foreach(TraversableForwarder.scala:35)
+	at scala.collection.generic.TraversableForwarder.foreach$(TraversableForwarder.scala:35)
+	at scala.collection.mutable.ListBuffer.foreach(ListBuffer.scala:44)
+	at langserver.core.Connection.notifySubscribers(Connection.scala:41)
+	at langserver.core.Connection.$anonfun$start$4(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$4$adapted(Connection.scala:99)
+	at play.api.libs.json.JsSuccess.fold(JsResult.scala:15)
+	at langserver.core.Connection.$anonfun$start$2(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$2$adapted(Connection.scala:97)
+	at scala.Option.fold(Option.scala:158)
+	at langserver.core.Connection.start(Connection.scala:97)
+	at langserver.core.LanguageServer.start(LanguageServer.scala:50)
+	at org.github.dragos.vscode.EnsimeLanguageServer.start(EnsimeLanguageServer.scala:51)
+	at org.github.dragos.vscode.Main$.main(Main.scala:23)
+	at org.github.dragos.vscode.Main.main(Main.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.cli.qn.a(Unknown Source)
+	at coursier.cli.qm.i(Unknown Source)
+	at coursier.cli.qs.a(Unknown Source)
+	at c.g.a.c(Unknown Source)
+	at a.b.d_(Unknown Source)
+	at c.b.d.E.g(Unknown Source)
+	at c.b.e.aU.g(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.qm.b(Unknown Source)
+	at coursier.cli.M.b(Unknown Source)
+	at a.J.d_(Unknown Source)
+	at c.E.h(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.Coursier.main(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.Bootstrap.main(Bootstrap.java:412)
+[2017-12-15 16:29:53,139] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7409
+[2017-12-15 16:29:53,139] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7409
+[2017-12-15 16:29:53,143] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":19},"contentChanges":[{"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}]}}
+[2017-12-15 16:29:53,143] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":19},"contentChanges":[{"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}]}}
+[2017-12-15 16:29:53,147] ERROR langserver.core.Connection - failed notification handler
+java.lang.NullPointerException: null
+	at org.github.dragos.vscode.EnsimeLanguageServer.onChangeTextDocument(EnsimeLanguageServer.scala:167)
+	at langserver.core.LanguageServer.$anonfun$new$1(LanguageServer.scala:42)
+	at langserver.core.LanguageServer.$anonfun$new$1$adapted(LanguageServer.scala:40)
+	at langserver.core.Connection.$anonfun$notifySubscribers$2(Connection.scala:42)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+	at scala.util.Try$.apply(Try.scala:209)
+	at langserver.core.Connection.$anonfun$notifySubscribers$1(Connection.scala:42)
+	at scala.collection.immutable.List.foreach(List.scala:389)
+	at scala.collection.generic.TraversableForwarder.foreach(TraversableForwarder.scala:35)
+	at scala.collection.generic.TraversableForwarder.foreach$(TraversableForwarder.scala:35)
+	at scala.collection.mutable.ListBuffer.foreach(ListBuffer.scala:44)
+	at langserver.core.Connection.notifySubscribers(Connection.scala:41)
+	at langserver.core.Connection.$anonfun$start$4(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$4$adapted(Connection.scala:99)
+	at play.api.libs.json.JsSuccess.fold(JsResult.scala:15)
+	at langserver.core.Connection.$anonfun$start$2(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$2$adapted(Connection.scala:97)
+	at scala.Option.fold(Option.scala:158)
+	at langserver.core.Connection.start(Connection.scala:97)
+	at langserver.core.LanguageServer.start(LanguageServer.scala:50)
+	at org.github.dragos.vscode.EnsimeLanguageServer.start(EnsimeLanguageServer.scala:51)
+	at org.github.dragos.vscode.Main$.main(Main.scala:23)
+	at org.github.dragos.vscode.Main.main(Main.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.cli.qn.a(Unknown Source)
+	at coursier.cli.qm.i(Unknown Source)
+	at coursier.cli.qs.a(Unknown Source)
+	at c.g.a.c(Unknown Source)
+	at a.b.d_(Unknown Source)
+	at c.b.d.E.g(Unknown Source)
+	at c.b.e.aU.g(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.qm.b(Unknown Source)
+	at coursier.cli.M.b(Unknown Source)
+	at a.J.d_(Unknown Source)
+	at c.E.h(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.Coursier.main(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.Bootstrap.main(Bootstrap.java:412)
+[2017-12-15 16:29:53,147] ERROR langserver.core.Connection - failed notification handler
+java.lang.NullPointerException: null
+	at org.github.dragos.vscode.EnsimeLanguageServer.onChangeTextDocument(EnsimeLanguageServer.scala:167)
+	at langserver.core.LanguageServer.$anonfun$new$1(LanguageServer.scala:42)
+	at langserver.core.LanguageServer.$anonfun$new$1$adapted(LanguageServer.scala:40)
+	at langserver.core.Connection.$anonfun$notifySubscribers$2(Connection.scala:42)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+	at scala.util.Try$.apply(Try.scala:209)
+	at langserver.core.Connection.$anonfun$notifySubscribers$1(Connection.scala:42)
+	at scala.collection.immutable.List.foreach(List.scala:389)
+	at scala.collection.generic.TraversableForwarder.foreach(TraversableForwarder.scala:35)
+	at scala.collection.generic.TraversableForwarder.foreach$(TraversableForwarder.scala:35)
+	at scala.collection.mutable.ListBuffer.foreach(ListBuffer.scala:44)
+	at langserver.core.Connection.notifySubscribers(Connection.scala:41)
+	at langserver.core.Connection.$anonfun$start$4(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$4$adapted(Connection.scala:99)
+	at play.api.libs.json.JsSuccess.fold(JsResult.scala:15)
+	at langserver.core.Connection.$anonfun$start$2(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$2$adapted(Connection.scala:97)
+	at scala.Option.fold(Option.scala:158)
+	at langserver.core.Connection.start(Connection.scala:97)
+	at langserver.core.LanguageServer.start(LanguageServer.scala:50)
+	at org.github.dragos.vscode.EnsimeLanguageServer.start(EnsimeLanguageServer.scala:51)
+	at org.github.dragos.vscode.Main$.main(Main.scala:23)
+	at org.github.dragos.vscode.Main.main(Main.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.cli.qn.a(Unknown Source)
+	at coursier.cli.qm.i(Unknown Source)
+	at coursier.cli.qs.a(Unknown Source)
+	at c.g.a.c(Unknown Source)
+	at a.b.d_(Unknown Source)
+	at c.b.d.E.g(Unknown Source)
+	at c.b.e.aU.g(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.qm.b(Unknown Source)
+	at coursier.cli.M.b(Unknown Source)
+	at a.J.d_(Unknown Source)
+	at c.E.h(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.Coursier.main(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.Bootstrap.main(Bootstrap.java:412)
+[2017-12-15 16:29:56,020] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7409
+[2017-12-15 16:29:56,020] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 7409
+[2017-12-15 16:29:56,023] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":19},"contentChanges":[{"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}]}}
+[2017-12-15 16:29:56,023] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":19},"contentChanges":[{"text":"/**\n * Copyright (C) 2017 Roland Kuhn <http://rolandkuhn.com>\n */\npackage com.rolandkuhn.akka_typed_session\n\nimport akka.typed.receptionist.Receptionist._\nimport akka.typed.ActorRef\n\nobject FSMprotocol {\n  sealed abstract class Nat extends Product with Serializable {\n    def N: Int\n    override def toString = s\"Nat($N)\"\n  }\n  sealed abstract class _0 extends Nat\n  private case object N extends _0 {\n    val N = 0\n  }\n  case class S[P <: Nat](p: P) extends Nat {\n    lazy val N = p.N + 1\n  }\n\n  val _0: _0 = N\n  type  _1 = S[_0]; val  _1:  _1 = S(_0);  \n  type  _2 = S[_1]; val  _2:  _2 = S(_1);  \n  type  _3 = S[_2]; val  _3:  _3 = S(_2);  \n  type  _4 = S[_3]; val  _4:  _4 = S(_3);  \n  type  _5 = S[_4]; val  _5:  _5 = S(_4);  \n  type  _6 = S[_5]; val  _6:  _6 = S(_5);  \n  type  _7 = S[_6]; val  _7:  _7 = S(_6);  \n  type  _8 = S[_7]; val  _8:  _8 = S(_7);  \n  type  _9 = S[_8]; val  _9:  _9 = S(_8);  \n  type _10 = S[_9]; val _10: _10 = S(_9); \n\n  case class ~[Ten <: Nat, One <: Nat](ten: Ten, one: One)\n  implicit class toDigit[N <: Nat](n: N) extends AnyVal {\n    def ~[M <: Nat, O1 <: Nat, O2 <: Nat](m: M)(implicit e1: Mul10[N, O1], e2: Add[O1, M, O2]): O2 =\n      e2(e1(n), m)\n  }\n  implicit def toNat[Ten <: Nat, One <: Nat, O1 <: Nat, O2 <: Nat](in: Ten ~ One)(\n    implicit e1: Mul10[Ten, O1], e2: Add[O1, One, O2]): O2 =\n    e2(e1(in.ten), in.one)\n\n  sealed trait Mul10[N <: Nat, O <: Nat] extends (N => O)\n  implicit val mul10zero: Mul10[_0, _0] = (zero) => zero\n  implicit def mul10[N <: Nat, O1 <: Nat, O2 <: Nat](implicit e1: Mul10[N, O1], e2: Add[O1, _10, O2]): Mul10[S[N], O2] =\n    (sn) => e2(e1(sn.p), _10)\n  \n  sealed trait Add[X <: Nat, Y <: Nat, O <: Nat] extends ((X, Y) => O)\n  object Add extends AddLow {\n    implicit def add0[X <: Nat]: Add[X, _0, X] = (x, zero) => x\n  }\n  trait AddLow {\n    implicit def add[X <: Nat, Y <: Nat, O <: Nat](implicit e: Add[X, Y, O]): Add[X, S[Y], S[O]] =\n      (x, y) => S(e(x, y.p))\n  }\n}\n\ntrait FSMprotocol {\n\n  type Start\n  def start: Start\n\n  trait Transition[S1, E <: Effect, S2] extends (S1 => S2)\n  object Transition {\n    def apply[S1, E <: Effect, S2](f: S1 => S2): Transition[S1, E, S2] =\n      new Transition[S1, E, S2] {\n        def apply(s: S1) = f(s)\n      }\n  }\n\n  trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)\n  implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {\n    def apply(s: S) = s\n  }\n  implicit def makeAStep[S1, E <: Effect, S2, T <: Effects, S3](\n    implicit t: Transition[S1, E, S2], steps: MakeSteps[S2, T, S3]): MakeSteps[S1, E :: T, S3] =\n    new MakeSteps[S1, E :: T, S3] {\n      def apply(s: S1) = steps(t(s))\n    }\n}\n\nobject FSMsample extends FSMprotocol {\n  import FSMprotocol._\n\n  sealed trait FromClient\n  sealed trait ToClient\n  case class Login(client: ActorRef[ToClient]) extends FromClient\n  case class Challenge() extends ToClient\n  case class Response() extends FromClient\n  case class Handle() extends ToClient\n  case class Query() extends FromClient\n  case class Result() extends ToClient\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n\n  type Start = Start.type\n  def start = Start\n\n  case object Start\n  implicit val sendRegistration: Transition[Start.type, E.Send[Register[Login]], RegistrationSent.type] = Transition(s => RegistrationSent)\n\n  case object RegistrationSent\n  implicit val readRegistered: Transition[RegistrationSent.type, E.Read[Registered[Login]], GotRegistered.type] = Transition(r => GotRegistered)\n\n  case object GotRegistered\n  implicit val readLogin: Transition[GotRegistered.type, E.Read[Login], GotLogin.type] = Transition(r => GotLogin)\n\n  case object GotLogin\n  implicit val sendChallenge: Transition[GotLogin.type, E.Send[Challenge], ChallengeSent[_2]] = Transition(r => ChallengeSent(_2))\n\n  case class ChallengeSent[N <: Nat](n: N)\n  implicit def readResponse[N <: Nat]: Transition[ChallengeSent[N], E.Read[Response], GotResponse[N]] = Transition(c => GotResponse(c.n))\n\n  case class GotResponse[N <: Nat](n: N)\n  implicit val sendHandle: Transition[GotResponse[_], E.Send[Handle], HandleSent.type] = Transition(r => HandleSent)\n  implicit def sendChallenge2[N <: Nat]: Transition[GotResponse[S[N]], E.Send[Challenge], ChallengeSent[N]] = Transition(r => ChallengeSent(r.n.p))\n  implicit def sendNoChallenge: Transition[GotResponse[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object HandleSent\n  implicit val readQuery: Transition[HandleSent.type, E.Read[Query], GotQuery[_2]] = Transition(h => GotQuery(_2))\n\n  case class GotQuery[N <: Nat](n: N)\n  implicit def sendResult[N <: Nat]: Transition[GotQuery[N], E.Send[Result], SentResult[N]] = Transition(q => SentResult(q.n))\n\n  case class SentResult[N <: Nat](n: N)\n  implicit def readQuery2[N <: Nat]: Transition[SentResult[S[N]], E.Read[Query], GotQuery[N]] = Transition(r => GotQuery(r.n.p))\n  implicit val readNoQuery: Transition[SentResult[_0], E.Halt, Final.type] = Transition(r => Final)\n\n  case object Final\n}\n\nobject FSM {\n  final case class Step[Protocol <: FSMprotocol, State, Self, Out] private[FSM] (\n      p: Protocol, op: Operation[Self, Out, HNil]) {\n\n    def andThen[Out2, E <: Effects, Next](f: Out => Operation[Self, Out2, E])(\n      implicit steps: p.MakeSteps[State, E, Next]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(f).ignoreEffects)\n    \n    def capturing[Next, Out2](block: (Out, Step[Protocol, State, Self, Out]) => Step[Protocol, Next, Self, Out2]): Step[Protocol, Next, Self, Out2] =\n      Step(p, op.flatMap(block(_, this).op))\n  }\n\n  def apply[P <: FSMprotocol, S](p: P)(implicit opDSL: ScalaDSL.OpDSL[S]): Step[p.type, p.Start, S, p.Start] = {\n    val state = p.start\n    new Step(p, ScalaDSL.opUnit(state))\n  }\n}\n\nobject Sample extends App {\n  import ScalaDSL._\n  import FSMsample._\n  import FSMprotocol._\n\n  object key extends ServiceKey[Login] {\n    lazy val id = \"sample\"\n  }\n\n  /*\n   * - register with receptionist\n   * - enter infinite loop of\n   *     - read Login\n   *     - send challenge\n   *     - read response\n   *     - if wrong, send new challenge, up to three times\n   *     - if correct, send access handle for query\n   *     - query session allows 3 queries\n   */\n  OpDSL[Login] {\n    FSM(FSMsample)\n      .andThen(_ => opProcessSelf)\n      .andThen(self => opCall(registerService(key, self).named(\"register\")))\n      .andThen(_ => opRead)\n      .capturing((login, step) =>\n        step\n          .andThen(_ => opSend(login.client, Challenge()))\n          // .andThen(_ => opRead) // This is correctly rejected due to reading wrong type\n      )\n      .op\n  }\n\n  val x = _1 ~ _0\n  val y: _10 = x\n  val x1 = _1 ~ _2\n  val y1: S[S[_10]] = x1\n  val _123 = _1 ~ _2 ~ _3\n  println(_123)\n  println(_123.N)\n}\n"}]}}
+[2017-12-15 16:29:56,027] ERROR langserver.core.Connection - failed notification handler
+java.lang.NullPointerException: null
+	at org.github.dragos.vscode.EnsimeLanguageServer.onChangeTextDocument(EnsimeLanguageServer.scala:167)
+	at langserver.core.LanguageServer.$anonfun$new$1(LanguageServer.scala:42)
+	at langserver.core.LanguageServer.$anonfun$new$1$adapted(LanguageServer.scala:40)
+	at langserver.core.Connection.$anonfun$notifySubscribers$2(Connection.scala:42)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+	at scala.util.Try$.apply(Try.scala:209)
+	at langserver.core.Connection.$anonfun$notifySubscribers$1(Connection.scala:42)
+	at scala.collection.immutable.List.foreach(List.scala:389)
+	at scala.collection.generic.TraversableForwarder.foreach(TraversableForwarder.scala:35)
+	at scala.collection.generic.TraversableForwarder.foreach$(TraversableForwarder.scala:35)
+	at scala.collection.mutable.ListBuffer.foreach(ListBuffer.scala:44)
+	at langserver.core.Connection.notifySubscribers(Connection.scala:41)
+	at langserver.core.Connection.$anonfun$start$4(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$4$adapted(Connection.scala:99)
+	at play.api.libs.json.JsSuccess.fold(JsResult.scala:15)
+	at langserver.core.Connection.$anonfun$start$2(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$2$adapted(Connection.scala:97)
+	at scala.Option.fold(Option.scala:158)
+	at langserver.core.Connection.start(Connection.scala:97)
+	at langserver.core.LanguageServer.start(LanguageServer.scala:50)
+	at org.github.dragos.vscode.EnsimeLanguageServer.start(EnsimeLanguageServer.scala:51)
+	at org.github.dragos.vscode.Main$.main(Main.scala:23)
+	at org.github.dragos.vscode.Main.main(Main.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.cli.qn.a(Unknown Source)
+	at coursier.cli.qm.i(Unknown Source)
+	at coursier.cli.qs.a(Unknown Source)
+	at c.g.a.c(Unknown Source)
+	at a.b.d_(Unknown Source)
+	at c.b.d.E.g(Unknown Source)
+	at c.b.e.aU.g(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.qm.b(Unknown Source)
+	at coursier.cli.M.b(Unknown Source)
+	at a.J.d_(Unknown Source)
+	at c.E.h(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.Coursier.main(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.Bootstrap.main(Bootstrap.java:412)
+[2017-12-15 16:29:56,027] ERROR langserver.core.Connection - failed notification handler
+java.lang.NullPointerException: null
+	at org.github.dragos.vscode.EnsimeLanguageServer.onChangeTextDocument(EnsimeLanguageServer.scala:167)
+	at langserver.core.LanguageServer.$anonfun$new$1(LanguageServer.scala:42)
+	at langserver.core.LanguageServer.$anonfun$new$1$adapted(LanguageServer.scala:40)
+	at langserver.core.Connection.$anonfun$notifySubscribers$2(Connection.scala:42)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+	at scala.util.Try$.apply(Try.scala:209)
+	at langserver.core.Connection.$anonfun$notifySubscribers$1(Connection.scala:42)
+	at scala.collection.immutable.List.foreach(List.scala:389)
+	at scala.collection.generic.TraversableForwarder.foreach(TraversableForwarder.scala:35)
+	at scala.collection.generic.TraversableForwarder.foreach$(TraversableForwarder.scala:35)
+	at scala.collection.mutable.ListBuffer.foreach(ListBuffer.scala:44)
+	at langserver.core.Connection.notifySubscribers(Connection.scala:41)
+	at langserver.core.Connection.$anonfun$start$4(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$4$adapted(Connection.scala:99)
+	at play.api.libs.json.JsSuccess.fold(JsResult.scala:15)
+	at langserver.core.Connection.$anonfun$start$2(Connection.scala:99)
+	at langserver.core.Connection.$anonfun$start$2$adapted(Connection.scala:97)
+	at scala.Option.fold(Option.scala:158)
+	at langserver.core.Connection.start(Connection.scala:97)
+	at langserver.core.LanguageServer.start(LanguageServer.scala:50)
+	at org.github.dragos.vscode.EnsimeLanguageServer.start(EnsimeLanguageServer.scala:51)
+	at org.github.dragos.vscode.Main$.main(Main.scala:23)
+	at org.github.dragos.vscode.Main.main(Main.scala)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.cli.qn.a(Unknown Source)
+	at coursier.cli.qm.i(Unknown Source)
+	at coursier.cli.qs.a(Unknown Source)
+	at c.g.a.c(Unknown Source)
+	at a.b.d_(Unknown Source)
+	at c.b.d.E.g(Unknown Source)
+	at c.b.e.aU.g(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.qm.b(Unknown Source)
+	at coursier.cli.M.b(Unknown Source)
+	at a.J.d_(Unknown Source)
+	at c.E.h(Unknown Source)
+	at a.c.a(Unknown Source)
+	at coursier.cli.Coursier.main(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at coursier.Bootstrap.main(Bootstrap.java:412)
+[2017-12-15 16:29:56,027] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 201
+[2017-12-15 16:29:56,027] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 201
+[2017-12-15 16:29:56,028] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didSave","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":19}}}
+[2017-12-15 16:29:56,028] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"textDocument/didSave","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala","version":19}}}
+[2017-12-15 16:29:56,030] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - saveTextDocuemnt TextDocumentIdentifier(file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala)
+[2017-12-15 16:29:56,030] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - saveTextDocuemnt TextDocumentIdentifier(file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala)
+[2017-12-15 17:36:01,286] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:01,286] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:01,287] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":3,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":128,"character":96}}}
+[2017-12-15 17:36:01,287] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":3,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":128,"character":96}}}
+[2017-12-15 17:36:01,289] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (128, 96).
+[2017-12-15 17:36:01,289] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (128, 96).
+[2017-12-15 17:36:01,290] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:01,290] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:01,442] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:01,442] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:01,443] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":3}}
+[2017-12-15 17:36:01,443] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":3}}
+[2017-12-15 17:36:01,444] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(3)
+[2017-12-15 17:36:01,444] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(3)
+[2017-12-15 17:36:16,471] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:16,471] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:16,472] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":4,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":23}}}
+[2017-12-15 17:36:16,472] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":4,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":23}}}
+[2017-12-15 17:36:16,473] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (158, 23).
+[2017-12-15 17:36:16,473] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (158, 23).
+[2017-12-15 17:36:16,474] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:16,474] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:22,098] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:22,098] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:22,098] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":4}}
+[2017-12-15 17:36:22,098] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":4}}
+[2017-12-15 17:36:22,099] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(4)
+[2017-12-15 17:36:22,099] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(4)
+[2017-12-15 17:36:22,301] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 237
+[2017-12-15 17:36:22,301] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 237
+[2017-12-15 17:36:22,302] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":5,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":25}}}
+[2017-12-15 17:36:22,302] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":5,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":25}}}
+[2017-12-15 17:36:22,303] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got goto definition request at (158, 25).
+[2017-12-15 17:36:22,303] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got goto definition request at (158, 25).
+[2017-12-15 17:36:22,306] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - Goto Definition future completed: succes? false
+[2017-12-15 17:36:22,306] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - Goto Definition future completed: succes? false
+[2017-12-15 17:36:22,554] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:22,554] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:22,554] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":6,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":23}}}
+[2017-12-15 17:36:22,554] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":6,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":23}}}
+[2017-12-15 17:36:22,555] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (158, 23).
+[2017-12-15 17:36:22,555] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (158, 23).
+[2017-12-15 17:36:22,556] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:22,556] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:22,799] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:22,799] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:22,800] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":6}}
+[2017-12-15 17:36:22,800] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":6}}
+[2017-12-15 17:36:22,802] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(6)
+[2017-12-15 17:36:22,802] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(6)
+[2017-12-15 17:36:22,951] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:22,951] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 232
+[2017-12-15 17:36:22,951] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":7,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":24}}}
+[2017-12-15 17:36:22,951] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":7,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":24}}}
+[2017-12-15 17:36:22,953] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (158, 24).
+[2017-12-15 17:36:22,953] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got hover request at (158, 24).
+[2017-12-15 17:36:22,954] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:22,954] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - DocUriAtPointReq future completed: succes? false
+[2017-12-15 17:36:23,246] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:23,246] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 62
+[2017-12-15 17:36:23,247] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":7}}
+[2017-12-15 17:36:23,247] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","method":"$/cancelRequest","params":{"id":7}}
+[2017-12-15 17:36:23,249] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(7)
+[2017-12-15 17:36:23,249] ERROR org.github.dragos.vscode.EnsimeLanguageServer - Unknown notification CancelRequest(7)
+[2017-12-15 17:36:23,249] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 237
+[2017-12-15 17:36:23,249] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 237
+[2017-12-15 17:36:23,250] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":8,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":24}}}
+[2017-12-15 17:36:23,250] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":8,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///Users/rkuhn/comp/akka-typed-session/src/main/scala/com/rolandkuhn/akka_typed_session/FSM.scala"},"position":{"line":158,"character":24}}}
+[2017-12-15 17:36:23,251] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got goto definition request at (158, 24).
+[2017-12-15 17:36:23,251] INFO org.github.dragos.vscode.EnsimeLanguageServer - Got goto definition request at (158, 24).
+[2017-12-15 17:36:23,253] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - Goto Definition future completed: succes? false
+[2017-12-15 17:36:23,253] DEBUG org.github.dragos.vscode.EnsimeLanguageServer - Goto Definition future completed: succes? false
+[2017-12-15 17:37:03,952] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 58
+[2017-12-15 17:37:03,952] DEBUG langserver.core.MessageReader - Received headers:
+Content-Length: 58
+[2017-12-15 17:37:03,952] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":9,"method":"shutdown","params":null}
+[2017-12-15 17:37:03,952] DEBUG langserver.core.Connection - Received {"jsonrpc":"2.0","id":9,"method":"shutdown","params":null}
+[2017-12-15 17:37:03,967] DEBUG langserver.core.MessageWriter - Content-Length: 198
+
+
+
+{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params","data":{"meaning":"Invalid method parameter(s).","error":{"obj":[{"msg":["command parameters must be given"],"args":[]}]}}},"id":9}
+[2017-12-15 17:37:03,967] DEBUG langserver.core.MessageWriter - Content-Length: 198
+
+
+
+{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params","data":{"meaning":"Invalid method parameter(s).","error":{"obj":[{"msg":["command parameters must be given"],"args":[]}]}}},"id":9}
+[2017-12-15 17:37:03,967] DEBUG langserver.core.MessageWriter - payload: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params","data":{"meaning":"Invalid method parameter(s).","error":{"obj":[{"msg":["command parameters must be given"],"args":[]}]}}},"id":9}
+[2017-12-15 17:37:03,967] DEBUG langserver.core.MessageWriter - payload: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params","data":{"meaning":"Invalid method parameter(s).","error":{"obj":[{"msg":["command parameters must be given"],"args":[]}]}}},"id":9}
+[2017-12-15 17:37:04,961] INFO langserver.core.MessageReader - End of stream, terminating thread
+[2017-12-15 17:37:04,961] INFO langserver.core.MessageReader - End of stream, terminating thread
+[2017-12-15 17:37:04,962] INFO org.github.dragos.vscode.EnsimeLanguageServer - Shutdown request
+[2017-12-15 17:37:04,962] INFO org.github.dragos.vscode.EnsimeLanguageServer - Shutdown request
+[2017-12-15 17:37:04,963] INFO org.github.dragos.vscode.EnsimeLanguageServer - Shutting down actor system.
+[2017-12-15 17:37:04,963] INFO org.github.dragos.vscode.EnsimeLanguageServer - Shutting down actor system.
+[2017-12-15 17:37:05,012] INFO org.github.dragos.vscode.EnsimeLanguageServer - Actor system down.
+[2017-12-15 17:37:05,012] INFO org.github.dragos.vscode.EnsimeLanguageServer - Actor system down.

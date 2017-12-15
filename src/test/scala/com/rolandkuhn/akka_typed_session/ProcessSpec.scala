@@ -5,7 +5,7 @@ package com.rolandkuhn.akka_typed_session
 
 import akka.typed.{ ActorRef, ActorSystem, Behavior }
 import ScalaDSL._
-import akka.typed.patterns.Receptionist._
+import akka.typed.receptionist.Receptionist._
 import scala.concurrent.duration._
 import akka.typed.scaladsl.AskPattern._
 import org.scalatest.Succeeded
@@ -21,13 +21,13 @@ import shapeless.{ :+:, CNil }
 object ProcessSpec {
 
   sealed abstract class RequestService extends ServiceKey[Request]
-  object RequestService extends RequestService
+  object RequestService extends RequestService { lazy val id = "request" }
 
   case class Request(req: String, replyTo: ActorRef[Response])
   case class Response(res: String)
 
   sealed abstract class LoginService extends ServiceKey[Login]
-  object LoginService extends LoginService
+  object LoginService extends LoginService { lazy val id = "request" }
 
   case class Login(replyTo: ActorRef[AuthResult])
   sealed trait AuthResult
@@ -116,7 +116,7 @@ class ProcessSpec extends TypedSpec {
             _ ← retry(1.second, 3, register(self, RequestService).named("register"))
             backend ← retry(1.second, 3, getBackend.named("getBackend"))
           } yield OpDSL.loopInf[Request] {
-            for (req ← opRead) yield forkAndCancel(5.seconds, talkWithBackend(backend.addresses.head, req).named("worker"))
+            for (req ← opRead) yield forkAndCancel(5.seconds, talkWithBackend(backend.serviceInstances.head, req).named("worker"))
           }
         }
 
@@ -286,7 +286,7 @@ class ProcessSpec extends TypedSpec {
       val ctx = new EffectfulActorContext("name", OpDSL[ActorRef[Done]] {
         opRead
       }.named("read").toBehavior, 1, system)
-      val Effect.Spawned(name) :: Nil = ctx.getAllEffects()
+      val Effect.Spawned(name, _) :: Nil = ctx.getAllEffects()
       withClue(s" name=$name") {
         name.substring(0, 1) should ===("$")
         // FIXME #22938 name.substring(name.length - 5) should ===("-read")
@@ -300,7 +300,7 @@ class ProcessSpec extends TypedSpec {
         opRead.map(_ ! Done)
       }.named("read").toBehavior, 1, system)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effect.Spawned(procName, _) = ctx.getEffect()
       ctx.hasEffects should ===(false)
       val procInbox = ctx.childInbox[ActorRef[Done]](procName)
 
@@ -327,7 +327,7 @@ class ProcessSpec extends TypedSpec {
         }.named("called")))
       }.named("call").toBehavior, 1, system)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effect.Spawned(procName, _) = ctx.getEffect()
       ctx.hasEffects should ===(false)
       val procInbox = ctx.childInbox[ActorRef[Done]](procName)
 
@@ -340,7 +340,7 @@ class ProcessSpec extends TypedSpec {
         case other            ⇒ fail(s"expected SubActor, got $other")
       }
       ctx.run(t)
-      val Effect.Spawned(calledName) = ctx.getEffect()
+      val Effect.Spawned(calledName, _) = ctx.getEffect()
 
       assertStopping(ctx, 2)
       ctx.selfInbox.receiveAll() should ===(Nil)
@@ -357,10 +357,10 @@ class ProcessSpec extends TypedSpec {
           }
       }.named("call").toBehavior, 1, system)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effect.Spawned(procName, _) = ctx.getEffect()
       val procInbox = ctx.childInbox[ActorRef[Done]](procName)
 
-      val Effect.Spawned(forkName) = ctx.getEffect()
+      val Effect.Spawned(forkName, _) = ctx.getEffect()
       val forkInbox = ctx.childInbox[ActorRef[Done]](forkName)
       ctx.hasEffects should ===(false)
 
@@ -403,7 +403,7 @@ class ProcessSpec extends TypedSpec {
         } yield ret.ref ! Info(sys, proc, actor, value)
       }.named("things").toBehavior, 1, system)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effect.Spawned(procName, _) = ctx.getEffect()
       assertStopping(ctx, 1)
       ctx.isAlive should ===(false)
 
@@ -423,7 +423,7 @@ class ProcessSpec extends TypedSpec {
         } yield opRead
       }.toBehavior, 1, system)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effect.Spawned(procName, _) = ctx.getEffect()
       assertStopping(ctx, 1)
       ctx.isAlive should ===(false)
     }
@@ -441,8 +441,8 @@ class ProcessSpec extends TypedSpec {
         } yield opRead
       }.toBehavior, 1, system)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effect.Spawned(procName, _) = ctx.getEffect()
+      val Effect.Spawned(calleeName, _) = ctx.getEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 2)
       ctx.isAlive should ===(false)
@@ -466,7 +466,7 @@ class ProcessSpec extends TypedSpec {
       }.toBehavior, 1, system)
 
       val Effect.Spawned(_) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effect.Spawned(calleeName, _) = ctx.getEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 1)
       ctx.isAlive should ===(true)
@@ -521,7 +521,7 @@ class ProcessSpec extends TypedSpec {
       }.toBehavior, 1, system)
 
       val Effect.Spawned(_) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effect.Spawned(calleeName, _) = ctx.getEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 2)
       ctx.isAlive should ===(false)
@@ -555,7 +555,7 @@ class ProcessSpec extends TypedSpec {
       }.toBehavior, 1, system)
 
       val Effect.Spawned(_) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effect.Spawned(calleeName, _) = ctx.getEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 2)
       ctx.isAlive should ===(false)
@@ -578,7 +578,7 @@ class ProcessSpec extends TypedSpec {
         }
       }.toBehavior, 1, system)
 
-      val Effect.Spawned(mainName) = ctx.getEffect()
+      val Effect.Spawned(mainName, _) = ctx.getEffect()
       ctx.getAllEffects() should ===(Nil)
 
       ctx.run(MainCmd(""))
@@ -606,8 +606,8 @@ class ProcessSpec extends TypedSpec {
         } yield throw new Exception("expected")
       }.toBehavior, 1, system)
 
-      val Effect.Spawned(mainName) = ctx.getEffect()
-      val Effect.Spawned(forkName) = ctx.getEffect()
+      val Effect.Spawned(mainName, _) = ctx.getEffect()
+      val Effect.Spawned(forkName, _) = ctx.getEffect()
       // FIXME #22938 forkName should endWith("-fork")
       ctx.getAllEffects() should ===(Nil)
 

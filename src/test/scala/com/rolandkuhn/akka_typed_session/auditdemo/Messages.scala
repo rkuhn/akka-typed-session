@@ -7,9 +7,9 @@ package auditdemo
 import akka.typed.ActorRef
 import java.net.URI
 import java.util.UUID
-import akka.typed.patterns.Receptionist.ServiceKey
+import akka.typed.receptionist.Receptionist.ServiceKey
 
-case object AuditService extends ServiceKey[LogActivity]
+case object AuditService extends ServiceKey[LogActivity] { lazy val id = "logger" }
 case class LogActivity(who: ActorRef[Nothing], what: String, id: Long, replyTo: ActorRef[ActivityLogged])
 case class ActivityLogged(who: ActorRef[Nothing], id: Long)
 

@@ -3,8 +3,9 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed.patterns.Receptionist._
+import akka.typed.receptionist.Receptionist._
 import akka.typed.ActorRef
+import scala.annotation.implicitNotFound
 
 object FSMprotocol {
   sealed abstract class Nat extends Product with Serializable {
@@ -68,6 +69,7 @@ trait FSMprotocol {
       }
   }
 
+  @implicitNotFound("cannot perform effect ${EE} in state ${S1}")
   trait MakeSteps[S1, EE <: Effects, S2] extends (S1 => S2)
   implicit def makeNoSteps[S]: MakeSteps[S, HNil, S] = new MakeSteps[S, HNil, S] {
     def apply(s: S) = s
@@ -161,7 +163,9 @@ object Sample extends App {
   import FSMsample._
   import FSMprotocol._
 
-  object key extends ServiceKey[Login]
+  object key extends ServiceKey[Login] {
+    lazy val id = "sample"
+  }
 
   /*
    * - register with receptionist

@@ -9,7 +9,7 @@ import akka.{ actor ⇒ a }
 import scala.util.control.NoStackTrace
 import shapeless.{ Coproduct, :+:, CNil }
 import shapeless.ops.coproduct
-import akka.typed.patterns.Receptionist
+import akka.typed.receptionist.Receptionist
 import akka.Done
 
 /**
