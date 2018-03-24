@@ -16,22 +16,22 @@ import akka.util.Timeout
 
 import scala.reflect.ClassTag
 import akka.actor.ActorInitializationException
-import akka.typed._
+import akka.actor.typed._
 
 import language.existentials
-import akka.testkit.TestEvent.Mute
-import akka.typed.scaladsl.Actor._
+import akka.actor.typed.scaladsl.Behaviors._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalactic.CanEqual
 
 import scala.util.control.NonFatal
-import akka.typed.scaladsl.AskPattern
+import akka.actor.typed.scaladsl.AskPattern
+import akka.testkit.TestEvent.Mute
 
 import scala.util.control.NoStackTrace
-import akka.typed.testkit.{ Inbox, TestKitSettings }
+import akka.testkit.typed.TestKitSettings
 import org.scalatest.time.Span
-import akka.testkit.EventFilter
+import akka.testkit.typed.scaladsl.TestInbox
 
 /**
  * Helper class for writing tests for typed Actors with ScalaTest.
@@ -57,21 +57,13 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
   // extension point
   def setTimeout: Timeout = Timeout(1.minute)
 
-  private var nativeSystemUsed = false
-  lazy val nativeSystem: ActorSystem[TypedSpec.Command] = {
-    val sys = ActorSystem(AkkaSpec.getCallerName(classOf[TypedSpec]), guardian(), config = Some(config withFallback AkkaSpec.testConf))
-    nativeSystemUsed = true
-    sys
-  }
-  private var adaptedSystemUsed = false
-  lazy val adaptedSystem: ActorSystem[TypedSpec.Command] = {
-    val sys = ActorSystem.adapter(AkkaSpec.getCallerName(classOf[TypedSpec]), guardian(), config = Some(config withFallback AkkaSpec.testConf))
-    adaptedSystemUsed = true
+  implicit lazy val system: ActorSystem[TypedSpec.Command] = {
+    val sys = ActorSystem(guardian(), AkkaSpec.getCallerName(classOf[TypedSpec]), config = Some(config withFallback AkkaSpec.testConf))
     sys
   }
 
   implicit val timeout = setTimeout
-  implicit def scheduler = nativeSystem.scheduler
+  implicit def scheduler = system.scheduler
 
   trait StartSupport {
     def system: ActorSystem[TypedSpec.Command]
@@ -80,37 +72,25 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
     def nextName(prefix: String = "a"): String = s"$prefix-${nameCounter.next()}"
 
     def start[T](behv: Behavior[T]): ActorRef[T] = {
-      import akka.typed.scaladsl.AskPattern._
-      import akka.typed.testkit.scaladsl._
+      import akka.actor.typed.scaladsl.AskPattern._
+      import akka.testkit.typed.scaladsl._
       implicit val testSettings = TestKitSettings(system)
       Await.result(system ? TypedSpec.Create(behv, nextName()), 3.seconds.dilated)
     }
   }
 
-  trait NativeSystem {
-    def system: ActorSystem[TypedSpec.Command] = nativeSystem
-  }
-
-  trait AdaptedSystem {
-    def system: ActorSystem[TypedSpec.Command] = adaptedSystem
-  }
-
   override def afterAll(): Unit = {
-    if (nativeSystemUsed)
-      Await.result(nativeSystem.terminate, timeout.duration)
-    if (adaptedSystemUsed)
-      Await.result(adaptedSystem.terminate, timeout.duration)
+      Await.result(system.terminate, timeout.duration)
   }
 
   // TODO remove after basing on ScalaTest 3 with async support
   import akka.testkit._
   def await[T](f: Future[T]): T = Await.result(f, timeout.duration * 1.1)
 
-  lazy val blackhole = await(nativeSystem ? Create(immutable[Any] { case _ ⇒ same }, "blackhole"))
+  lazy val blackhole = await(system ? Create(receiveMessage[Any](_ ⇒ same), "blackhole"))
 
   /**
-   * Run an Actor-based test. The test procedure is most conveniently
-   * formulated using the [[StepWise$]] behavior type.
+   * Run an Actor-based test.
    */
   def runTest[T: ClassTag](name: String)(behavior: Behavior[T])(implicit system: ActorSystem[Command]): Future[Status] =
     system ? (RunTest(name, behavior, _, timeout.duration))
@@ -144,6 +124,7 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
     }
   }
 
+  import akka.actor.typed.scaladsl.adapter._
   def muteExpectedException[T <: Exception: ClassTag](
     message: String = null,
     source: String = null,
@@ -151,14 +132,14 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
     pattern: String = null,
     occurrences: Int = Int.MaxValue)(implicit system: ActorSystem[Command]): EventFilter = {
     val filter = EventFilter(message, source, start, pattern, occurrences)
-    system.eventStream.publish(Mute(filter))
+    system.toUntyped.eventStream.publish(Mute(filter))
     filter
   }
 
   /**
    * Group assertion that ensures that the given inboxes are empty.
    */
-  def assertEmpty(inboxes: Inbox[_]*): Unit = {
+  def assertEmpty(inboxes: TestInbox[_]*): Unit = {
     inboxes foreach (i ⇒ withClue(s"inbox $i had messages")(i.hasMessages should be(false)))
   }
 
@@ -175,8 +156,6 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
 }
 
 object TypedSpec {
-  import akka.{ typed ⇒ t }
-
   sealed abstract class Start
   case object Start extends Start
 
@@ -193,7 +172,7 @@ object TypedSpec {
   class SimulatedException(message: String) extends RuntimeException(message) with NoStackTrace
 
   def guardian(outstanding: Map[ActorRef[_], ActorRef[Status]] = Map.empty): Behavior[Command] =
-    immutable[Command] {
+    receive[Command] {
       case (ctx, r: RunTest[t]) ⇒
         val test = ctx.spawn(r.behavior, r.name)
         ctx.schedule(r.timeout, r.replyTo, Timedout)
@@ -205,12 +184,17 @@ object TypedSpec {
       case (ctx, c: Create[t]) ⇒
         c.replyTo ! ctx.spawn(c.behavior, c.name)
         same
-    } onSignal {
-      case (ctx, t @ Terminated(test)) ⇒
+    } receiveSignal {
+      case (_, t @ Terminated(test)) ⇒
         outstanding get test match {
           case Some(reply) ⇒
-            if (t.failure eq null) reply ! Success
-            else reply ! Failed(t.failure)
+            t.failure match {
+              case Some(thr) =>
+                reply ! Failed(thr)
+              case None =>
+                reply ! Success
+
+            }
             guardian(outstanding - test)
           case None ⇒ same
         }
@@ -232,23 +216,14 @@ class TypedSpecSpec extends TypedSpec {
 
   object `A TypedSpec` {
 
-    trait CommonTests {
-      implicit def system: ActorSystem[TypedSpec.Command]
-
       def `must report failures`(): Unit = {
-        val f =
-          if (system == nativeSystem) muteExpectedException[TypedSpec.SimulatedException](occurrences = 1)
-          else muteExpectedException[ActorInitializationException](occurrences = 1)
+        val f = muteExpectedException[ActorInitializationException](occurrences = 1)
         a[TypedSpec.SimulatedException] must be thrownBy {
-          sync(runTest("failure")(deferred[String] { ctx =>
+          sync(runTest("failure")(setup[String] { _ =>
             throw new TypedSpec.SimulatedException("expected")
           }))
         }
         f.assertDone(1.second)
       }
-    }
-
-    object `when using the native implementation` extends CommonTests with NativeSystem
-    object `when using the adapted implementation` extends CommonTests with AdaptedSystem
   }
 }

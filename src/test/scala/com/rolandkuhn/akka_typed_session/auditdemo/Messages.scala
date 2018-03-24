@@ -4,12 +4,15 @@
 package com.rolandkuhn.akka_typed_session
 package auditdemo
 
-import akka.typed.ActorRef
+import akka.actor.typed.ActorRef
 import java.net.URI
 import java.util.UUID
-import akka.typed.patterns.Receptionist.ServiceKey
 
-case object AuditService extends ServiceKey[LogActivity]
+import akka.actor.typed.receptionist.ServiceKey
+
+object AuditService {
+ val Key = ServiceKey[LogActivity]("audit-service")
+}
 case class LogActivity(who: ActorRef[Nothing], what: String, id: Long, replyTo: ActorRef[ActivityLogged])
 case class ActivityLogged(who: ActorRef[Nothing], id: Long)
 

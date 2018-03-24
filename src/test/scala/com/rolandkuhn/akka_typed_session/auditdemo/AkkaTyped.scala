@@ -12,10 +12,10 @@ class Greeter extends akka.actor.Actor {
 }
 
 object Greeter {
-  import akka.typed.scaladsl.Actor
+  import akka.actor.typed.scaladsl.Behaviors
   val behavior =
-    Actor.immutable[Greet] { (ctx, greet) =>
+    Behaviors.receive[Greet] { (_, greet) =>
       println(s"Hello ${greet.whom}!")
-      Actor.same
+      Behaviors.same
     }
 }

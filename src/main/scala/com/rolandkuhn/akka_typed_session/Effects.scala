@@ -3,7 +3,7 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed._
+import akka.actor.typed._
 import shapeless.{ Coproduct, :+:, CNil }
 import shapeless.test.illTyped
 import scala.annotation.implicitNotFound

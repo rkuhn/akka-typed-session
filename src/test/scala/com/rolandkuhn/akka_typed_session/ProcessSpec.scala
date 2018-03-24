@@ -3,30 +3,31 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed._
+import akka.actor.typed._
 import ScalaDSL._
-import akka.typed.patterns.Receptionist._
+
 import scala.concurrent.duration._
-import akka.typed.scaladsl.AskPattern._
 import org.scalatest.Succeeded
 import akka.actor.InvalidActorNameException
 import akka.Done
 import java.util.concurrent.TimeoutException
+
+import akka.actor.typed.receptionist.Receptionist.{Find, Listing, Register, Registered}
+import akka.actor.typed.receptionist.ServiceKey
 import org.scalatest.prop.PropertyChecks
+
 import scala.collection.immutable.TreeSet
 import scala.util.Random
-import akka.typed.testkit._
+import akka.testkit.typed.scaladsl._
 
 object ProcessSpec {
 
-  sealed abstract class RequestService extends ServiceKey[Request]
-  object RequestService extends RequestService
+  val RequestService = ServiceKey[Request]("request-service")
 
   case class Request(req: String, replyTo: ActorRef[Response])
   case class Response(res: String)
 
-  sealed abstract class LoginService extends ServiceKey[Login]
-  object LoginService extends LoginService
+  val LoginService = ServiceKey[Login]("login-service")
 
   case class Login(replyTo: ActorRef[AuthResult])
   sealed trait AuthResult
@@ -42,17 +43,16 @@ class ProcessSpec extends TypedSpec {
   import ProcessSpec._
 
   trait CommonTests {
-    implicit def system: ActorSystem[TypedSpec.Command]
 
     def `demonstrates working processes`(): Unit = {
 
       def register[T](server: ActorRef[T], key: ServiceKey[T]) =
-        OpDSL[Registered[T]] { implicit opDSL ⇒
+        OpDSL[Registered] { implicit opDSL ⇒
           for {
             self ← opProcessSelf
             sys ← opSystem
           } yield {
-            sys.receptionist ! Register(key, server)(self)
+            sys.receptionist ! Register(key, server, self)
             opRead
           }
         }
@@ -78,7 +78,7 @@ class ProcessSpec extends TypedSpec {
         }
 
       val getBackend =
-        OpDSL[Listing[Login]] { implicit opDSL ⇒
+        OpDSL[Listing] { implicit opDSL ⇒
           for {
             self ← opProcessSelf
             system ← opSystem
@@ -109,7 +109,7 @@ class ProcessSpec extends TypedSpec {
             _ ← retry(1.second, 3, register(self, RequestService).named("register"))
             backend ← retry(1.second, 3, getBackend.named("getBackend"))
           } yield OpDSL.loopInf { _ ⇒
-            for (req ← opRead) yield forkAndCancel(5.seconds, talkWithBackend(backend.addresses.head, req).named("worker"))
+            for (req ← opRead) yield forkAndCancel(5.seconds, talkWithBackend(backend.serviceInstances(LoginService).head, req).named("worker"))
           }
         }
 
@@ -254,12 +254,12 @@ class ProcessSpec extends TypedSpec {
     // TODO dropping messages on the main ref including warning when dropping Traversals (or better: make it robust)
   }
 
-  object `A ProcessDSL (native)` extends CommonTests with NativeSystem {
+  object `A ProcessDSL` extends CommonTests {
 
-    private def assertStopping(ctx: EffectfulActorContext[_], n: Int): Unit = {
-      val stopping = ctx.getAllEffects()
+    private def assertStopping(ctx: BehaviorTestKit[_], n: Int): Unit = {
+      val stopping = ctx.retrieveAllEffects()
       stopping.size should ===(n)
-      stopping.collect { case Effect.Stopped(_) => true }.size should ===(n)
+      stopping.collect { case Effects.Stopped(_) => true }.size should ===(n)
     }
 
     def `must reject invalid process names early`(): Unit = {
@@ -275,31 +275,31 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must name process refs appropriately (EffectfulActorContext)`(): Unit = {
-      val ctx = new EffectfulActorContext("name", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
         opRead
-      }.named("read").toBehavior, 1, system)
-      val Effect.Spawned(name) :: Nil = ctx.getAllEffects()
+      }.named("read").toBehavior)
+      val Effects.Spawned(_,name, _) :: Nil = ctx.retrieveAllEffects()
       withClue(s" name=$name") {
         name.substring(0, 1) should ===("$")
         // FIXME #22938 name.substring(name.length - 5) should ===("-read")
       }
-      ctx.getAllEffects() should ===(Nil)
+      ctx.retrieveAllEffects() should ===(Nil)
     }
 
     def `must read`(): Unit = {
-      val ret = Inbox[Done]("readRet")
-      val ctx = new EffectfulActorContext("read", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ret = TestInbox[Done]("readRet")
+      val ctx = BehaviorTestKit(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
         opRead.map(_ ! Done)
-      }.named("read").toBehavior, 1, system)
+      }.named("read").toBehavior)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
-      ctx.hasEffects should ===(false)
+      val Effects.Spawned(_, procName, _) = ctx.retrieveEffect()
+      ctx.retrieveAllEffects().size should ===(0)
       val procInbox = ctx.childInbox[ActorRef[Done]](procName)
 
       ctx.run(MainCmd(ret.ref))
       procInbox.receiveAll() should ===(List(ret.ref))
 
-      val t = ctx.selfInbox.receiveMsg()
+      val t = ctx.selfInbox.receiveMessage()
       t match {
         case sub: SubActor[_] ⇒ sub.ref.path.name should ===(procName)
         case other            ⇒ fail(s"expected SubActor, got $other")
@@ -312,27 +312,28 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must call`(): Unit = {
-      val ret = Inbox[Done]("callRet")
-      val ctx = new EffectfulActorContext("call", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ret = TestInbox[Done]("callRet")
+      val ctx = BehaviorTestKit(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
         opRead.flatMap(replyTo ⇒ opCall(OpDSL[String] { implicit opDSL ⇒
           opUnit(replyTo ! Done)
         }.named("called")))
-      }.named("call").toBehavior, 1, system)
+      }.named("call").toBehavior)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
-      ctx.hasEffects should ===(false)
+      val Effects.Spawned(_,procName, _) = ctx.retrieveEffect()
+
+      ctx.retrieveAllEffects().size should ===(0)
       val procInbox = ctx.childInbox[ActorRef[Done]](procName)
 
       ctx.run(MainCmd(ret.ref))
       procInbox.receiveAll() should ===(List(ret.ref))
 
-      val t = ctx.selfInbox.receiveMsg()
+      val t = ctx.selfInbox.receiveMessage()
       t match {
         case sub: SubActor[_] ⇒ sub.ref.path.name should ===(procName)
         case other            ⇒ fail(s"expected SubActor, got $other")
       }
       ctx.run(t)
-      val Effect.Spawned(calledName) = ctx.getEffect()
+      val Effects.Spawned(_, calledName, _) = ctx.retrieveEffect()
 
       assertStopping(ctx, 2)
       ctx.selfInbox.receiveAll() should ===(Nil)
@@ -341,26 +342,26 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must fork`(): Unit = {
-      val ret = Inbox[Done]("callRet")
-      val ctx = new EffectfulActorContext("call", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ret = TestInbox[Done]("callRet")
+      val ctx = BehaviorTestKit(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
         opFork(opRead.map(_ ! Done).named("forkee"))
           .map { sub ⇒
             opRead.map(sub.ref ! _)
           }
-      }.named("call").toBehavior, 1, system)
+      }.named("call").toBehavior, "call")
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effects.Spawned(_, procName, _) = ctx.retrieveEffect()
       val procInbox = ctx.childInbox[ActorRef[Done]](procName)
 
-      val Effect.Spawned(forkName) = ctx.getEffect()
+      val Effects.Spawned(_, forkName, _) = ctx.retrieveEffect()
       val forkInbox = ctx.childInbox[ActorRef[Done]](forkName)
-      ctx.hasEffects should ===(false)
+      ctx.retrieveAllEffects().nonEmpty should ===(false)
 
       ctx.run(MainCmd(ret.ref))
       procInbox.receiveAll() should ===(List(ret.ref))
-      ctx.getAllEffects() should ===(Nil)
+      ctx.retrieveAllEffects() should ===(Nil)
 
-      val t1 = ctx.selfInbox.receiveMsg()
+      val t1 = ctx.selfInbox.receiveMessage()
       t1 match {
         case sub: SubActor[_] ⇒ sub.ref.path.name should ===(procName)
         case other            ⇒ fail(s"expected SubActor, got $other")
@@ -370,7 +371,7 @@ class ProcessSpec extends TypedSpec {
       forkInbox.receiveAll() should ===(List(ret.ref))
       assertStopping(ctx, 1)
 
-      val t2 = ctx.selfInbox.receiveMsg()
+      val t2 = ctx.selfInbox.receiveMessage()
       t2 match {
         case sub: SubActor[_] ⇒ sub.ref.path.name should ===(forkName)
         case other            ⇒ fail(s"expected SubActor, got $other")
@@ -385,21 +386,21 @@ class ProcessSpec extends TypedSpec {
 
     def `must return all the things`(): Unit = {
       case class Info(sys: ActorSystem[Nothing], proc: ActorRef[Nothing], actor: ActorRef[Nothing], value: Int)
-      val ret = Inbox[Info]("thingsRet")
-      val ctx = new EffectfulActorContext("things", OpDSL[ActorRef[Done]] { implicit opDSL ⇒
+      val ret = TestInbox[Info]("thingsRet")
+      val ctx = BehaviorTestKit(OpDSL[ActorRef[Done]] { implicit opDSL ⇒
         for {
           sys ← opSystem
           proc ← opProcessSelf
           actor ← opActorSelf
           value ← opUnit(42)
         } yield ret.ref ! Info(sys, proc, actor, value)
-      }.named("things").toBehavior, 1, system)
+      }.named("things").toBehavior)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effects.Spawned(_, procName, _) = ctx.retrieveEffect()
       assertStopping(ctx, 1)
       ctx.isAlive should ===(false)
 
-      val Info(sys, proc, actor, value) = ret.receiveMsg()
+      val Info(sys, proc, actor, value) = ret.receiveMessage()
       ret.hasMessages should ===(false)
       sys should ===(system)
       proc.path.name should ===(procName)
@@ -408,20 +409,20 @@ class ProcessSpec extends TypedSpec {
     }
 
     def `must filter`(): Unit = {
-      val ctx = new EffectfulActorContext("filter", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         for {
           self ← opProcessSelf
           if false
         } yield opRead
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
+      val Effects.Spawned(_, procName, _) = ctx.retrieveEffect()
       assertStopping(ctx, 1)
       ctx.isAlive should ===(false)
     }
 
     def `must filter across call`(): Unit = {
-      val ctx = new EffectfulActorContext("filter", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         val callee =
           for {
             self ← opProcessSelf
@@ -431,10 +432,10 @@ class ProcessSpec extends TypedSpec {
         for {
           _ ← opCall(callee.named("callee"))
         } yield opRead
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(procName) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effects.Spawned(_, procName, _) = ctx.retrieveEffect()
+      val Effects.Spawned(_, calleeName, _) = ctx.retrieveEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 2)
       ctx.isAlive should ===(false)
@@ -442,7 +443,7 @@ class ProcessSpec extends TypedSpec {
 
     def `must filter across call with replacement value`(): Unit = {
       var received: String = null
-      val ctx = new EffectfulActorContext("filter", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         val callee =
           for {
             self ← opProcessSelf
@@ -455,10 +456,10 @@ class ProcessSpec extends TypedSpec {
           received = result
           opRead
         }
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(_) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effects.Spawned(_, _, _) = ctx.retrieveEffect()
+      val Effects.Spawned(_, calleeName, _) = ctx.retrieveEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 1)
       ctx.isAlive should ===(true)
@@ -469,7 +470,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         (for {
           _ ← opProcessSelf
           _ = call(0)
@@ -480,9 +481,9 @@ class ProcessSpec extends TypedSpec {
           msg should ===(Done)
           call(4)
         }
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(_) = ctx.getEffect()
+      val Effects.Spawned(_, _, _) = ctx.retrieveEffect()
       assertStopping(ctx, 1)
       ctx.isAlive should ===(false)
       calls.reverse should ===(List(0, 2, 3, 1, 4))
@@ -492,7 +493,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         val callee =
           for {
             _ ← opProcessSelf
@@ -510,10 +511,10 @@ class ProcessSpec extends TypedSpec {
         ).map { _ ⇒
           call(4)
         }
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(_) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effects.Spawned(_, _, _) = ctx.retrieveEffect()
+      val Effects.Spawned(calleeName, _, _) = ctx.retrieveEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 2)
       ctx.isAlive should ===(false)
@@ -524,7 +525,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         val callee =
           for {
             _ ← opProcessSelf
@@ -544,10 +545,10 @@ class ProcessSpec extends TypedSpec {
           msg should ===(Done)
           call(4)
         }
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(_) = ctx.getEffect()
-      val Effect.Spawned(calleeName) = ctx.getEffect()
+      val Effects.Spawned(_, _, _) = ctx.retrieveEffect()
+      val Effects.Spawned(_, calleeName, _) = ctx.retrieveEffect()
       // FIXME #22938 calleeName should endWith("-callee")
       assertStopping(ctx, 2)
       ctx.isAlive should ===(false)
@@ -558,7 +559,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         (for {
           _ ← opCleanup(() ⇒ call(0))
           _ ← opCleanup(() ⇒ call(1))
@@ -568,14 +569,14 @@ class ProcessSpec extends TypedSpec {
         ).map { _ ⇒
           call(4)
         }
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(mainName) = ctx.getEffect()
-      ctx.getAllEffects() should ===(Nil)
+      val Effects.Spawned(_, mainName, _) = ctx.retrieveEffect()
+      ctx.retrieveAllEffects() should ===(Nil)
 
       ctx.run(MainCmd(""))
       ctx.childInbox[String](mainName).receiveAll() should ===(List(""))
-      val t = ctx.selfInbox.receiveMsg()
+      val t = ctx.selfInbox.receiveMessage()
       a[Exception] shouldBe thrownBy {
         ctx.run(t)
       }
@@ -587,7 +588,7 @@ class ProcessSpec extends TypedSpec {
       var calls = List.empty[Int]
       def call(n: Int): Unit = calls ::= n
 
-      val ctx = new EffectfulActorContext("cleanup", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         for {
           _ ← opFork(
             (for {
@@ -596,16 +597,16 @@ class ProcessSpec extends TypedSpec {
             } yield opRead).named("fork"))
           _ ← opRead
         } yield throw new Exception("expected")
-      }.toBehavior, 1, system)
+      }.toBehavior)
 
-      val Effect.Spawned(mainName) = ctx.getEffect()
-      val Effect.Spawned(forkName) = ctx.getEffect()
+      val Effects.Spawned(_, mainName, _) = ctx.retrieveEffect()
+      val Effects.Spawned(_, forkName, _) = ctx.retrieveEffect()
       // FIXME #22938 forkName should endWith("-fork")
-      ctx.getAllEffects() should ===(Nil)
+      ctx.retrieveAllEffects() should ===(Nil)
 
       ctx.run(MainCmd(""))
       ctx.childInbox[String](mainName).receiveAll() should ===(List(""))
-      val t = ctx.selfInbox.receiveMsg()
+      val t = ctx.selfInbox.receiveMessage()
       a[Exception] shouldBe thrownBy {
         ctx.run(t)
       }
@@ -625,7 +626,7 @@ class ProcessSpec extends TypedSpec {
       var values = List.empty[Int]
       def publish(n: Int): Unit = values ::= n
 
-      val ctx = new EffectfulActorContext("state", OpDSL[String] { implicit opDSL ⇒
+      val ctx = BehaviorTestKit(OpDSL[String] { implicit opDSL ⇒
         for {
           i1 ← opUpdateState(Key)(i ⇒ { publish(i); List(Add(2)) → 5 })
           _ = publish(i1)
@@ -634,18 +635,14 @@ class ProcessSpec extends TypedSpec {
           Done ← opForgetState(Key)
           i3 ← opReadState(Key)
         } yield publish(i3)
-      }.toBehavior, 1, system)
+      }.toBehavior, "state")
 
-      val Effect.Spawned(_) = ctx.getEffect()
+      val Effects.Spawned(_, _, _) = ctx.retrieveEffect()
       assertStopping(ctx, 1)
       ctx.isAlive should ===(false)
       values.reverse should ===(List(0, 5, 2, 4, 0))
     }
 
-  }
-
-  object `A ProcessDSL (adapted)` extends CommonTests with AdaptedSystem {
-    pending // awaiting fix for #22934 in akka/akka
   }
 
   object `A TimeoutOrdering` extends PropertyChecks {
