@@ -6,7 +6,7 @@ package auditdemo
 
 import ScalaDSL._
 import java.net.URI
-import akka.typed.ActorRef
+import akka.actor.typed.ActorRef
 import akka.Done
 import scala.util.Random
 import scala.concurrent.duration._
@@ -21,7 +21,7 @@ object ProcessBased {
     OpDSL[Nothing] { implicit opDSL =>
       for {
         self <- opActorSelf
-        audit <- opCall(getService(AuditService).named("getAudit"))
+        audit <- opCall(getService(AuditService.Key).named("getAudit"))
         _ <- opCall(doAudit(audit, self, "starting payment").named("preAudit"))
         _ <- opCall(doPayment(from, amount, payments).named("payment"))
         _ <- opCall(doAudit(audit, self, "payment finished").named("postAudit"))

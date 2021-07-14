@@ -3,7 +3,7 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed.ActorRef
+import akka.actor.typed.ActorRef
 
 /**
  * The main ActorRef of an Actor hosting [[Process]] instances accepts this

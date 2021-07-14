@@ -3,7 +3,7 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed.{ ActorSystem, ActorRef, Behavior, Props }
+import akka.actor.typed.{ ActorSystem, ActorRef, Behavior, Props }
 import akka.{ actor => a }
 import shapeless.{ Coproduct, :+:, CNil }
 import shapeless.ops._

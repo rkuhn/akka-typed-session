@@ -4,10 +4,12 @@
 package com.rolandkuhn.akka_typed_session
 
 import scala.concurrent.duration.Duration
-import akka.{ actor => a }
-import akka.typed.Behavior
-import akka.typed.scaladsl.Actor
-import shapeless.{ :+:, CNil }
+import akka.{actor => a}
+import akka.actor.typed._
+import akka.actor.typed.scaladsl.Behaviors
+import shapeless.{:+:, CNil}
+
+import scala.reflect.ClassTag
 
 /**
  * A Process runs the given operation steps in a context that provides the
@@ -84,5 +86,5 @@ final case class Process[S, +Out, E <: Effects](
   /**
    * Convert to a runnable [[Behavior]], e.g. for being used as the guardian of an [[ActorSystem]].
    */
-  def toBehavior: Behavior[ActorCmd[S]] = Actor.deferred(ctx => new internal.ProcessInterpreter(this, ctx).execute(ctx))
+  def toBehavior: Behavior[ActorCmd[S]] = Behaviors.setup(ctx => new internal.ProcessInterpreter(this, ctx).execute(ctx))
 }

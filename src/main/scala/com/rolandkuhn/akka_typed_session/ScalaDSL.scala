@@ -3,13 +3,17 @@
  */
 package com.rolandkuhn.akka_typed_session
 
-import akka.typed._
+import akka.actor.typed._
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
+
 import scala.concurrent.duration._
-import akka.{ actor ⇒ a }
+import akka.{actor => a}
+
 import scala.util.control.NoStackTrace
-import shapeless.{ Coproduct, :+:, CNil }
+import shapeless.{:+:, CNil, Coproduct}
 import shapeless.ops.coproduct
-import akka.typed.patterns.Receptionist
+import akka.actor.typed.receptionist.Receptionist.{Listing, _}
+
 
 /**
  * A DSL for writing reusable behavior pieces that are executed concurrently
@@ -464,15 +468,15 @@ object ScalaDSL {
   }
 
   // FIXME effects
-  def getService[T](key: Receptionist.ServiceKey[T]): Operation[Receptionist.Listing[T], ActorRef[T], _0] = {
+  def getService[T](key: ServiceKey[T]): Operation[Listing, ActorRef[T], _0] = {
     import Receptionist._
-    OpDSL[Listing[T]] { implicit opDSL =>
+    OpDSL[Listing] { implicit opDSL =>
       retry(1.second, 10, (for {
         sys <- opSystem
         self <- opProcessSelf
         _ <- opSend(sys.receptionist, Find(key)(self))
-        Listing(_, addresses) <- opRead
-      } yield addresses.headOption.map(opUnit(_)).getOrElse(opHalt.ignoreEffects)).named("askReceptionist")).ignoreEffects
+        listing <- opRead
+      } yield listing.serviceInstances(key).headOption.map(opUnit(_)).getOrElse(opHalt.ignoreEffects)).named("askReceptionist")).ignoreEffects
     }
   }
 

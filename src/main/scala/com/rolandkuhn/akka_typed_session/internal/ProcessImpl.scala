@@ -1,47 +1,50 @@
 /**
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com/>
- */
+  * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com/>
+  */
 package com.rolandkuhn.akka_typed_session
 package internal
 
-import akka.{ actor ⇒ a }
 import java.util.concurrent.ArrayBlockingQueue
-import akka.typed._
-import akka.typed.scaladsl.Actor
-import ScalaDSL._
+
+import akka.actor.typed._
+import akka.actor.typed.scaladsl.Behaviors
+
 import scala.concurrent.duration._
 import scala.annotation.tailrec
 import scala.util.control.NonFatal
 import java.util.LinkedList
+
 import scala.collection.immutable.TreeSet
 import akka.actor.Cancellable
 import java.util.concurrent.TimeoutException
-import akka.util.TypedMultiMap
+
 import akka.Done
 import akka.event.Logging
 
+import scala.reflect.ClassTag
+
 /**
- * Implementation notes:
- *
- *  - a process is a tree of AST nodes, where each leaf is a producer of a process
- *    (in fact the inner nodes are all FlatMap)
- *  - interpreter has a list of currently existing processes
- *  - processes may be active (i.e. waiting for external input) or passive (i.e.
- *    waiting for internal progress)
- *  - external messages and internal completions are events that are enqueued
- *  - event processing runs in FIFO order, which ensures some fairness between
- *    concurrent processes
- *  - what is stored is actually a Traversal of a tree which keeps the back-links
- *    pointing towards the root; this is cheaper than rewriting the trees
- *  - the maximum event queue size is bounded by #processes (multiple
- *    events from the same channel can be coalesced inside that channel by a counter)
- *  - this way even complex process trees can be executed with minimal allocations
- *    (fixed-size preallocated arrays for event queue and back-links, preallocated
- *    processes can even be reentrant due to separate unique Traversals)
- *
- * TODO:
- *   enable noticing when watchee failed
- */
+  * Implementation notes:
+  *
+  *  - a process is a tree of AST nodes, where each leaf is a producer of a process
+  * (in fact the inner nodes are all FlatMap)
+  *  - interpreter has a list of currently existing processes
+  *  - processes may be active (i.e. waiting for external input) or passive (i.e.
+  * waiting for internal progress)
+  *  - external messages and internal completions are events that are enqueued
+  *  - event processing runs in FIFO order, which ensures some fairness between
+  * concurrent processes
+  *  - what is stored is actually a Traversal of a tree which keeps the back-links
+  * pointing towards the root; this is cheaper than rewriting the trees
+  *  - the maximum event queue size is bounded by #processes (multiple
+  * events from the same channel can be coalesced inside that channel by a counter)
+  *  - this way even complex process trees can be executed with minimal allocations
+  * (fixed-size preallocated arrays for event queue and back-links, preallocated
+  * processes can even be reentrant due to separate unique Traversals)
+  *
+  * TODO:
+  * enable noticing when watchee failed
+  */
 private[akka_typed_session] object ProcessInterpreter {
 
   sealed trait TraversalState
@@ -82,12 +85,13 @@ private[akka_typed_session] object ProcessInterpreter {
 }
 
 /**
- * Important: must call .execute(ctx) upon creation and return its result as the
- * next behavior!
- */
+  * Important: must call .execute(ctx) upon creation and return its result as the
+  * next behavior!
+  */
 private[akka_typed_session] class ProcessInterpreter[T](
-    initial: ⇒ Process[T, Any, _],
-    ctx: scaladsl.ActorContext[ActorCmd[T]]) extends ExtensibleBehavior[ActorCmd[T]] {
+                                                         initial: ⇒ Process[T, Any, _],
+                                                         ctx: scaladsl.ActorContext[ActorCmd[T]]) extends ExtensibleBehavior[ActorCmd[T]] {
+
   import ProcessInterpreter._
 
   // FIXME data structures to be optimized
@@ -103,25 +107,33 @@ private[akka_typed_session] class ProcessInterpreter[T](
   if (mainProcess.state == HasValue) triggerCompletions(ctx, mainProcess)
   else processRoots += mainProcess
 
-  def receiveSignal(ctx: ActorContext[ActorCmd[T]], msg: Signal): Behavior[ActorCmd[T]] = {
+  override def receiveSignal(ctx: ActorContext[ActorCmd[T]], msg: Signal): Behavior[ActorCmd[T]] = {
     msg match {
       case PostStop ⇒
         processRoots.foreach(_.cancel())
-        Actor.same
-      case t @ Terminated(ref) ⇒
+        Behaviors.same
+      case t@Terminated(ref) ⇒
         watchMap.get(ref) match {
-          case None ⇒ Actor.unhandled
+          case None ⇒ Behaviors.unhandled
           case Some(set) ⇒
-            if (t.failure == null) set.foreach { case w: Impl.WatchRef[tpe] ⇒ w.target ! w.msg }
-            else set.foreach { case w: Impl.WatchRef[tpe] ⇒ w.target ! w.onFailure(t.failure).getOrElse(w.msg) }
+            t.failure match {
+              case Some(failure) =>
+                set.foreach {
+                  case w: Impl.WatchRef[tpe] ⇒ w.target ! w.onFailure(failure).getOrElse(w.msg)
+                }
+              case None =>
+                set.foreach {
+                  case w: Impl.WatchRef[tpe] ⇒ w.target ! w.msg
+                }
+            }
             watchMap -= ref
-            Actor.same
+            Behaviors.same
         }
-      case _ ⇒ Actor.same
+      case _ ⇒ Behaviors.same
     }
   }
 
-  def receiveMessage(ctx: ActorContext[ActorCmd[T]], msg: ActorCmd[T]): Behavior[ActorCmd[T]] = {
+  override def receive(ctx: ActorContext[ActorCmd[T]], msg: ActorCmd[T]): Behavior[ActorCmd[T]] = {
     // for paranoia: if Timeout message is lost due to bounded mailbox (costs 50ns if nonEmpty)
     if (timeouts.nonEmpty && Deadline.now.time.toNanos - timeouts.head.time.toNanos >= 0)
       throw new TimeoutException("process timeout expired")
@@ -139,17 +151,17 @@ private[akka_typed_session] class ProcessInterpreter[T](
         execute(ctx.asScala)
       case Timeout(_) ⇒
         // won’t get here anyway due to the clock check above, but is included for documentation
-        Actor.same
+        Behaviors.same
       case MainCmd(cmd) ⇒
         mainProcess.ref ! cmd
-        Actor.same
-      case _ ⇒ Actor.unhandled
+        Behaviors.same
+      case _ ⇒ Behaviors.unhandled
     }
   }
 
   /**
-   * Consume the queue of outstanding triggers.
-   */
+    * Consume the queue of outstanding triggers.
+    */
   def execute(ctx: scaladsl.ActorContext[ActorCmd[T]]): Behavior[ActorCmd[T]] = {
     while (!queue.isEmpty()) {
       val traversal = queue.poll()
@@ -161,13 +173,13 @@ private[akka_typed_session] class ProcessInterpreter[T](
       val refs = ctx.children.map(_.path.name)
       println(s"${ctx.self} execute run finished, roots = $roots, children = $refs, timeouts = $timeouts, watchMap = $watchMap")
     }
-    if (processRoots.isEmpty) Actor.stopped else this
+    if (processRoots.isEmpty) Behaviors.stopped else this
   }
 
   /**
-   * This only notifies potential listeners of the computed value of a finished
-   * process; the process must clean itself up beforehand.
-   */
+    * This only notifies potential listeners of the computed value of a finished
+    * process; the process must clean itself up beforehand.
+    */
   @tailrec private def triggerCompletions(ctx: scaladsl.ActorContext[ActorCmd[T]], traversal: Traversal[_]): Unit =
     if (traversal.state == HasValue) {
       if (Debug) println(s"${ctx.self} finished $traversal")
@@ -241,7 +253,7 @@ private[akka_typed_session] class ProcessInterpreter[T](
 
   def getState[KT](key: StateKey[KT]): KT = {
     stateMap.get(key) match {
-      case None    ⇒ key.initial
+      case None ⇒ key.initial
       case Some(v) ⇒ v.asInstanceOf[KT]
     }
   }
@@ -251,12 +263,12 @@ private[akka_typed_session] class ProcessInterpreter[T](
   }
 
   private class Traversal[Tself](val process: Process[Tself, Any, _], ctx: scaladsl.ActorContext[ActorCmd[T]])
-      extends InternalActorCmd[Nothing] with Function1[Tself, ActorCmd[T]]
+    extends InternalActorCmd[Nothing] with Function1[Tself, ActorCmd[T]]
       with SubActor[Tself] {
 
     val deadline = process.timeout match {
       case f: FiniteDuration ⇒ addTimeout(ctx, f)
-      case _                 ⇒ null
+      case _ ⇒ null
     }
 
     /*
@@ -285,7 +297,11 @@ private[akka_typed_session] class ProcessInterpreter[T](
         null // adapter drops nulls
       }
 
-    override val ref: ActorRef[Tself] = ctx.spawnAdapter(this, process.name)
+    // TODO; messageAdapter requires a ClassTag as a single Actor is used to impl them all to avoid resource leaks.
+    // we should expose the original spawnAdapter (currently private[akka])
+    override val ref: ActorRef[Tself] = ctx.spawnAnonymous(Behaviors.receiveMessage[Tself](m => {
+      this.apply(m); Behaviors.same
+    }))
 
     /*
      * Implementation of traversal logic
@@ -296,10 +312,10 @@ private[akka_typed_session] class ProcessInterpreter[T](
     override def toString: String =
       if (Debug) {
         val stackList = stack.toList.map {
-          case null               ⇒ ""
-          case t: Traversal[_]    ⇒ "Traversal"
+          case null ⇒ ""
+          case t: Traversal[_] ⇒ "Traversal"
           case Impl.FlatMap(_, _) ⇒ "FlatMap"
-          case other              ⇒ other.toString
+          case other ⇒ other.toString
         }
         s"Traversal(${ref.path.name}, ${process.name}, $state, $stackList, $ptr)"
       } else super.toString
@@ -307,10 +323,10 @@ private[akka_typed_session] class ProcessInterpreter[T](
     @tailrec private def depth(op: Operation[_, Any, _], d: Int = 0): Int = {
       import Impl._
       op match {
-        case FlatMap(next, _)               ⇒ depth(next, d + 1)
-        case Choice(ops)                    => depth(ops, d)
+        case FlatMap(next, _) ⇒ depth(next, d + 1)
+        case Choice(ops) => depth(ops, d)
         case Read | Call(_, _) | Cleanup(_) ⇒ d + 2
-        case _                              ⇒ d + 1
+        case _ ⇒ d + 1
       }
     }
 
@@ -369,8 +385,8 @@ private[akka_typed_session] class ProcessInterpreter[T](
     }
 
     /**
-     * Obtain the current state for this Traversal.
-     */
+      * Obtain the current state for this Traversal.
+      */
     def state: TraversalState = _state
 
     private def initialize(node: Operation[_, Any, _]): TraversalState = {
@@ -416,7 +432,7 @@ private[akka_typed_session] class ProcessInterpreter[T](
             processRoots += t
             push(t)
             valueOrTrampoline()
-          case Spawn(proc @ Process(name, timeout, mailboxCapacity, ops), deployment) ⇒
+          case Spawn(proc@Process(name, timeout, mailboxCapacity, ops), deployment) ⇒
             val ref =
               if (name == "") ctx.spawnAnonymous(proc.toBehavior, deployment)
               else ctx.spawn(proc.toBehavior, name, deployment)
@@ -447,7 +463,7 @@ private[akka_typed_session] class ProcessInterpreter[T](
             push(Done)
             valueOrTrampoline()
           case Cleanup(cleanup) ⇒
-            val f @ FlatMap(_, _) = pop() // this is ensured at the end of initialize()
+            val f@FlatMap(_, _) = pop() // this is ensured at the end of initialize()
             push(RunCleanup(cleanup))
             push(f)
             push(Done)
@@ -506,12 +522,13 @@ private[akka_typed_session] class ProcessInterpreter[T](
 
     def cancel(): Unit = {
       if (Debug) println(s"${ctx.self} canceling $this")
+
       @tailrec def rec(t: Traversal[_], acc: List[RunCleanup]): List[RunCleanup] =
         if (t.isAlive) {
           t.shutdown()
           t._state match {
-            case HasValue           ⇒ acc
-            case NeedsTrampoline    ⇒ addCleanups(t, acc)
+            case HasValue ⇒ acc
+            case NeedsTrampoline ⇒ addCleanups(t, acc)
             case NeedsExternalInput ⇒ addCleanups(t, acc)
             case NeedsInternalInput ⇒
               val next = pop().asInstanceOf[Traversal[_]]
@@ -519,11 +536,12 @@ private[akka_typed_session] class ProcessInterpreter[T](
               rec(next, addCleanups(t, acc))
           }
         } else Nil
+
       @tailrec def addCleanups(t: Traversal[_], acc: List[RunCleanup], idx: Int = 0): List[RunCleanup] =
         if (idx < t.ptr) {
           t.stack(idx) match {
             case r: RunCleanup ⇒ addCleanups(t, r :: acc, idx + 1)
-            case _             ⇒ addCleanups(t, acc, idx + 1)
+            case _ ⇒ addCleanups(t, acc, idx + 1)
           }
         } else acc
 
@@ -533,7 +551,8 @@ private[akka_typed_session] class ProcessInterpreter[T](
         try run.cleanup()
         catch {
           case NonFatal(ex) ⇒
-            ctx.system.eventStream.publish(Logging.Error(ex, ctx.self.toString, ProcessInterpreter.this.getClass,
+            import akka.actor.typed.scaladsl.adapter._
+            ctx.system.toUntyped.eventStream.publish(Logging.Error(ex, ctx.self.toString, ProcessInterpreter.this.getClass,
               s"exception in cleanup handler while canceling process ${process.name}: ${ex.getMessage}"))
         }
       }
@@ -548,7 +567,7 @@ private[akka_typed_session] class ProcessInterpreter[T](
       while (ptr > 0) {
         pop() match {
           case RunCleanup(cleanup) ⇒ cleanup()
-          case _                   ⇒
+          case _ ⇒
         }
       }
     }
