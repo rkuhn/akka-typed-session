@@ -91,8 +91,8 @@ object EffectsTest {
   type C = E.Fork[_0]
   type D = E.Spawn[_0]
 
-  illTyped("implicitly[ops.NoSub[String, Any]]")
-  illTyped("implicitly[ops.NoSub[String, String]]")
+//  illTyped("implicitly[ops.NoSub[String, Any]]")
+//  illTyped("implicitly[ops.NoSub[String, String]]")
   implicitly[ops.NoSub[String, Int]]
   implicitly[ops.NoSub[Any, String]]
 

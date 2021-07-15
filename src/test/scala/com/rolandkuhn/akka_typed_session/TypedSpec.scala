@@ -29,9 +29,9 @@ import akka.actor.typed.scaladsl.AskPattern
 import akka.testkit.TestEvent.Mute
 
 import scala.util.control.NoStackTrace
-import akka.testkit.typed.TestKitSettings
+import akka.actor.testkit.typed.TestKitSettings
 import org.scalatest.time.Span
-import akka.testkit.typed.scaladsl.TestInbox
+import akka.actor.testkit.typed.scaladsl.{TestDuration, TestInbox}
 
 /**
  * Helper class for writing tests for typed Actors with ScalaTest.
@@ -80,7 +80,7 @@ abstract class TypedSpec(val config: Config) extends TypedSpecSetup {
   }
 
   override def afterAll(): Unit = {
-      Await.result(system.terminate, timeout.duration)
+      Await.result(system.whenTerminated, timeout.duration)
   }
 
   // TODO remove after basing on ScalaTest 3 with async support

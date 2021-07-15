@@ -18,7 +18,7 @@ import org.scalatest.prop.PropertyChecks
 
 import scala.collection.immutable.TreeSet
 import scala.util.Random
-import akka.testkit.typed.scaladsl._
+import akka.actor.testkit.typed.scaladsl._
 
 object ProcessSpec {
 
@@ -128,7 +128,7 @@ class ProcessSpec extends TypedSpec {
             //          }
             _ ← opUnit(serverRef ! MainCmd(Request("hello", self)))
             msg1 ← opRead
-            succ1 = msg1 should ===(Response("yeehah"))
+            succ1 = (msg1 should ===(Response("yeehah")))
             _ ← opUnit(serverRef ! MainCmd(Request("hello", self)))
             msg2 ← opRead
             succ2 = msg2 should ===(Response("yeehah"))

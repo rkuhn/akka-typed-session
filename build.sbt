@@ -1,20 +1,17 @@
 name := "akka-typed-session"
-version := "0.1.0-SNAPSHOT"
+version := "0.1.1-SNAPSHOT"
 organization := "com.rolandkuhn"
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.14"
 
 //scalacOptions += "-deprecation"
 logBuffered in Test := false
 
-// Update to 2.5.12 once released. Current SNAPSHOT has many API changes over 2.5.11
-val akkaVersion = "2.5-SNAPSHOT"
-
-resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
+val akkaVersion = "2.5.12"
 
 libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "2.3.3",
+  "com.chuusai" %% "shapeless" % "2.3.7",
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % "test",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+  "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
+  "org.scalatest" %% "scalatest" % "3.0.9" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.13.5" % Test
 )
